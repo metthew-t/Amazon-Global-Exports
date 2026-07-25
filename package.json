@@ -1,0 +1,11 @@
+{
+  "name": "gold-app-deployment",
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "postinstall": "cd frontend && npm install --include=dev && npm run build && cd ../backend && npm install",
+    "start": "cd backend && npm start"
+  }
+}

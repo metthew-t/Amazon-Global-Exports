@@ -23,7 +23,7 @@ const app = express();
 app.use(cors({
   origin: [
     process.env.FRONTEND_URL, 
-    'https://amazon-global-web.netlify.app', 
+    'https://amazon-global-exports-web.onrender.com', 
     'http://localhost:5173'
   ].filter(Boolean),
   credentials: true,

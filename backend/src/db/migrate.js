@@ -4,8 +4,12 @@ dotenv.config();
 
 const { Pool } = pg;
 
+const isAzure = (process.env.DATABASE_URL || '').includes('azure') ||
+                (process.env.DATABASE_URL || '').includes('sslmode=require');
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: isAzure ? { rejectUnauthorized: false } : false,
 });
 
 const migrate = async () => {
@@ -262,14 +266,15 @@ const migrate = async () => {
 
     await client.query('COMMIT');
     console.log('✅ Migration completed successfully');
+    await pool.end();
+    process.exit(0);
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('❌ Migration failed:', err);
+    await pool.end();
     process.exit(1);
   } finally {
     client.release();
-    await pool.end();
-    process.exit(0);
   }
 };
 

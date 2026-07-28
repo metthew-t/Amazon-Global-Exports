@@ -6,6 +6,9 @@ const { Pool } = pg;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/postgres',
+  ssl: process.env.DATABASE_URL?.includes('azure') || process.env.DATABASE_URL?.includes('sslmode=require')
+    ? { rejectUnauthorized: false }
+    : false,
 });
 
 // Helper to convert SQLite '?' to PostgreSQL '$1, $2, ...'

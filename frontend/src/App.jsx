@@ -35,6 +35,7 @@ import AdminMeetingCodesPage from './pages/admin/AdminMeetingCodesPage';
 import AdminLuckyWheelPage from './pages/admin/AdminLuckyWheelPage';
 import AdminUpgradeRewardsPage from './pages/admin/AdminUpgradeRewardsPage';
 import AdminActiveUsersPage from './pages/admin/AdminActiveUsersPage';
+import AdminProfilePage from './pages/admin/AdminProfilePage';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -102,6 +103,7 @@ export default function App() {
             <Route path="lucky-wheel" element={<AdminLuckyWheelPage />} />
             <Route path="upgrade-rewards" element={<AdminUpgradeRewardsPage />} />
             <Route path="upgrade-reward-requests" element={<AdminUpgradeRewardsPage />} />
+            <Route path="profile" element={<AdminProfilePage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -23,9 +23,13 @@ export default function LoginPage() {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      await login(data.phone, data.password);
+      const user = await login(data.phone, data.password);
       toast({ title: 'Welcome back!', type: 'success' });
-      navigate('/dashboard');
+      if (user.is_admin === 1) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       toast({ title: 'Login failed', description: err.response?.data?.message || 'Invalid credentials', type: 'error' });
     } finally {

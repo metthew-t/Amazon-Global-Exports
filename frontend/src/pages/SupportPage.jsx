@@ -2,6 +2,23 @@ import { useQuery } from '@tanstack/react-query';
 import api from '../lib/api';
 import { MessageCircle, Users, ExternalLink } from 'lucide-react';
 
+function openExternalLink(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== 'string') return;
+  let url = rawUrl.trim();
+  if (!url || url === '#') return;
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = `https://${url}`;
+  }
+  // Create a real anchor element and click it — this bypasses all popup blockers
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noreferrer';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 export default function SupportPage() {
   const { data: support, isLoading } = useQuery({
     queryKey: ['supportLinks'],
@@ -18,41 +35,39 @@ export default function SupportPage() {
       </div>
 
       <div className="card-gold space-y-4">
-        <a 
-          href={support?.managerLink || '#'} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="flex items-center justify-between p-4 bg-gray-900 border border-sky-600/30 rounded-xl hover:bg-sky-500/10 transition-colors group"
+        <button
+          type="button"
+          onClick={() => openExternalLink(support?.managerLink)}
+          className="w-full flex items-center justify-between p-4 bg-gray-900 border border-sky-600/30 rounded-xl hover:bg-sky-500/10 transition-colors group cursor-pointer"
         >
           <div className="flex items-center gap-3">
             <div className="p-3 bg-sky-500/20 rounded-lg text-sky-400 group-hover:scale-110 transition-transform">
               <MessageCircle size={24} />
             </div>
-            <div>
+            <div className="text-left">
               <h3 className="font-bold text-gray-100">Contact Manager</h3>
               <p className="text-xs text-gray-400">Directly message our support manager</p>
             </div>
           </div>
           <ExternalLink size={20} className="text-gray-500 group-hover:text-sky-400 transition-colors" />
-        </a>
+        </button>
 
-        <a 
-          href={support?.groupLink || '#'} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="flex items-center justify-between p-4 bg-gray-900 border border-gray-700 rounded-xl hover:bg-gray-800 transition-colors group"
+        <button
+          type="button"
+          onClick={() => openExternalLink(support?.groupLink)}
+          className="w-full flex items-center justify-between p-4 bg-gray-900 border border-gray-700 rounded-xl hover:bg-gray-800 transition-colors group cursor-pointer"
         >
           <div className="flex items-center gap-3">
             <div className="p-3 bg-gray-800 rounded-lg text-gray-400 group-hover:scale-110 transition-transform">
               <Users size={24} />
             </div>
-            <div>
+            <div className="text-left">
               <h3 className="font-bold text-gray-100">Join Telegram Group</h3>
               <p className="text-xs text-gray-400">Interact with our community</p>
             </div>
           </div>
           <ExternalLink size={20} className="text-gray-500 group-hover:text-gray-300 transition-colors" />
-        </a>
+        </button>
       </div>
     </div>
   );

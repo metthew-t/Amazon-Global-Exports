@@ -6,11 +6,9 @@ import { z } from 'zod';
 import { Link } from 'react-router-dom';
 import api from '../lib/api';
 import { useToast } from '../components/Toast';
-import { ArrowUpCircle, Clock, AlertTriangle, Settings } from 'lucide-react';
+import { ArrowUpCircle, Clock, AlertTriangle, Settings, CalendarX, Zap } from 'lucide-react';
 
-const schema = z.object({
-  amount: z.number({ invalid_type_error: 'Amount must be a number' }).min(200, 'Minimum withdrawal is 200 ETB'),
-});
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export default function WithdrawPage() {
   const queryClient = useQueryClient();
@@ -32,7 +30,36 @@ export default function WithdrawPage() {
     queryFn: async () => (await api.get('/withdrawals')).data,
   });
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  // Fetch withdrawal settings (min amount, allowed days, quick-fill amounts)
+  const { data: withdrawSettings } = useQuery({
+    queryKey: ['withdrawalSettings'],
+    queryFn: async () => (await api.get('/withdrawals/settings')).data,
+  });
+
+  const minWithdrawal = withdrawSettings?.minWithdrawal ?? 200;
+  const quickAmounts = withdrawSettings?.quickAmounts ?? [];
+  const allowedDays = withdrawSettings?.allowedDays ?? [1, 2, 3, 4, 5, 6];
+
+  // Check if today is an allowed day
+  const todayIndex = new Date().getDay();
+  const isTodayAllowed = allowedDays.includes(todayIndex);
+
+  // Find next allowed day message
+  const nextAllowedDay = !isTodayAllowed && allowedDays.length > 0
+    ? allowedDays.map(d => ({ d, diff: (d - todayIndex + 7) % 7 || 7 })).sort((a, b) => a.diff - b.diff)[0]
+    : null;
+
+  const schema = z.object({
+    amount: z.number({ invalid_type_error: 'Amount must be a number' })
+  }).superRefine((val, ctx) => {
+    if (val.amount < minWithdrawal) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Minimum withdrawal is ${minWithdrawal} ETB`, path: ['amount'] });
+    } else if (quickAmounts.length > 0 && !quickAmounts.includes(val.amount)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Amount must be exactly one of the quick select options`, path: ['amount'] });
+    }
+  });
+
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
   });
 
@@ -76,6 +103,22 @@ export default function WithdrawPage() {
             </div>
           </div>
 
+          {/* Blocked Day Banner */}
+          {!isTodayAllowed && (
+            <div className="flex items-start gap-3 p-4 rounded-xl border border-red-500/30 bg-red-500/5">
+              <CalendarX size={22} className="text-red-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-red-300">Withdrawals Not Available Today</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Today ({DAY_NAMES[todayIndex]}) is not a withdrawal day.
+                  {nextAllowedDay
+                    ? ` Come back on ${DAY_NAMES[nextAllowedDay.d]}.`
+                    : ' No withdrawal days are currently configured.'}
+                </p>
+              </div>
+            </div>
+          )}
+
           {!accountInfo ? (
             <div className="card border-red-500/30 bg-red-500/5 text-center py-6">
               <AlertTriangle size={32} className="mx-auto text-red-400 mb-3" />
@@ -101,29 +144,59 @@ export default function WithdrawPage() {
               </div>
 
               <div className="card">
-                <div className="flex justify-between items-end mb-2">
+                <div className="flex justify-between items-end mb-3">
                   <label className="label m-0">Amount to Withdraw</label>
-                  <button type="button" onClick={() => reset({ amount: summary?.balance || 0 })} className="text-[10px] text-sky-400 border border-sky-500/30 px-2 py-0.5 rounded hover:bg-sky-500/10">MAX</button>
+                  <button type="button" onClick={() => setValue('amount', summary?.balance || 0, { shouldValidate: true })} className="text-[10px] text-sky-400 border border-sky-500/30 px-2 py-0.5 rounded hover:bg-sky-500/10">MAX</button>
                 </div>
+
+                {/* Quick-fill amount buttons */}
+                {quickAmounts.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-[10px] text-gray-500 mb-2 flex items-center gap-1"><Zap size={10}/> Quick Select</p>
+                    <div className="flex flex-wrap gap-2">
+                      {quickAmounts.map((amt) => (
+                        <button
+                          key={amt}
+                          type="button"
+                          onClick={() => setValue('amount', amt, { shouldValidate: true })}
+                          disabled={amt < minWithdrawal || (summary?.balance ?? 0) < amt}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-sky-500/30 text-sky-400 bg-sky-500/5 hover:bg-sky-500/15 hover:border-sky-400 transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          {amt.toLocaleString()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="relative">
                   <input 
                     type="number" 
                     {...register('amount', { valueAsNumber: true })} 
                     className="input pl-4 pr-12 text-lg font-mono" 
-                    placeholder="200.00" 
+                    placeholder={`${minWithdrawal}.00`} 
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">ETB</span>
                 </div>
                 {errors.amount && <p className="form-error">{errors.amount.message}</p>}
                 
                 <div className="mt-4 space-y-1">
-                  <p className="text-xs text-gray-500 flex items-center gap-1"><AlertTriangle size={12}/> Minimum withdrawal: 200 ETB</p>
-                  <p className="text-xs text-gray-500 flex items-center gap-1"><Clock size={12}/> Allowed once every 24 hours</p>
+                  <p className="text-xs text-gray-500 flex items-center gap-1"><AlertTriangle size={12}/> Minimum withdrawal: {minWithdrawal.toLocaleString()} ETB</p>
+                  <p className="text-xs text-gray-500 flex items-center gap-1"><Clock size={12}/> Allowed once every {withdrawSettings?.cooldownHours ?? 24} hours</p>
+                  {allowedDays.length > 0 && (
+                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                      <CalendarX size={12}/> Available days: {allowedDays.map(d => DAY_NAMES[d].slice(0, 3)).join(', ')}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              <button type="submit" disabled={withdrawMutation.isPending || !summary?.balance || summary.balance < 200} className="btn-primary w-full py-3.5 text-lg">
-                {withdrawMutation.isPending ? 'Processing...' : 'Request Withdrawal'}
+              <button
+                type="submit"
+                disabled={withdrawMutation.isPending || !isTodayAllowed || !summary?.balance || summary.balance < minWithdrawal}
+                className="btn-primary w-full py-3.5 text-lg"
+              >
+                {withdrawMutation.isPending ? 'Processing...' : !isTodayAllowed ? 'Not Available Today' : 'Request Withdrawal'}
               </button>
             </form>
           )}

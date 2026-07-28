@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get('/', protect, async (req, res) => {
   try {
-    const products = await db.prepare('SELECT * FROM products WHERE is_active = 1 ORDER BY level ASC').all();
+    const products = await db.prepare('SELECT * FROM products ORDER BY level ASC').all();
     res.json(products);
   } catch (err) {
     console.error(err);

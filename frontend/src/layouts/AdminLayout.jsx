@@ -17,6 +17,7 @@ const adminNav = [
   { to: '/admin/lucky-wheel', icon: Star, label: 'Lucky Wheel' },
   { to: '/admin/upgrade-rewards', icon: TrendingUp, label: 'Upgrades' },
   { to: '/admin/settings', icon: Settings, label: 'Settings' },
+  { to: '/admin/profile', icon: Users, label: 'Profile' },
 ];
 
 export default function AdminLayout() {

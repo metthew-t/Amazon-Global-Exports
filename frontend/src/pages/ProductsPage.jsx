@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
 import { useToast } from '../components/Toast';
-import { Package, Zap, Clock, ShieldCheck, ChevronRight } from 'lucide-react';
+import { Package, Zap, Clock, ShieldCheck, ChevronRight, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function ProductsPage() {
@@ -50,67 +50,77 @@ export default function ProductsPage() {
       </div>
 
       <div className="space-y-4">
-        {products?.map((p) => (
-          <div key={p.id} className="card relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-3 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
-              <ShieldCheck size={100} className="text-sky-500" />
+        {products?.map((p) => {
+          const isLocked = !p.is_active;
+
+          return (
+            <div key={p.id} className={`card relative overflow-hidden group ${isLocked ? 'opacity-70 grayscale' : ''}`}>
+              <div className="absolute top-0 right-0 p-3 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
+                {isLocked ? <Lock size={100} className="text-gray-500" /> : <ShieldCheck size={100} className="text-sky-500" />}
+              </div>
+              
+              <div className="relative z-10">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className={`text-xl font-serif ${isLocked ? 'text-gray-400' : 'text-sky-400'}`}>{p.name}</h3>
+                    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded border mt-1 ${isLocked ? 'bg-gray-800 text-gray-500 border-gray-700' : 'bg-sky-500/10 text-sky-300 border-sky-500/20'}`}>
+                      Level {p.level}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-400">Price</p>
+                    <p className="text-lg font-bold text-white">{parseFloat(p.price).toLocaleString()} ETB</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="bg-gray-950 rounded-lg p-2.5 border border-gray-800">
+                    <p className="text-[10px] text-gray-500 uppercase flex items-center gap-1"><Zap size={12}/> Daily Return</p>
+                    <p className={`${isLocked ? 'text-gray-500' : 'text-green-400'} font-mono font-semibold mt-0.5`}>+{parseFloat(p.daily_return).toLocaleString()} ETB</p>
+                  </div>
+                  <div className="bg-gray-950 rounded-lg p-2.5 border border-gray-800">
+                    <p className="text-[10px] text-gray-500 uppercase flex items-center gap-1"><Clock size={12}/> Duration</p>
+                    <p className={`${isLocked ? 'text-gray-500' : 'text-gray-300'} font-mono font-semibold mt-0.5`}>{p.duration_days} Days</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mb-5">
+                  <div className="bg-gray-950 rounded-lg p-2.5 border border-gray-800 flex justify-between items-center">
+                    <p className="text-[10px] text-gray-500 uppercase">Monthly Expected</p>
+                    <p className={`${isLocked ? 'text-gray-500' : 'text-sky-400'} font-mono font-bold`}>
+                      {parseFloat(p.daily_return * p.duration_days).toLocaleString()} ETB
+                    </p>
+                  </div>
+                  <div className="bg-gray-950 rounded-lg p-2.5 border border-gray-800 flex justify-between items-center">
+                    <p className="text-[10px] text-gray-500 uppercase">Yearly Expected</p>
+                    <p className={`${isLocked ? 'text-gray-500' : 'text-green-400'} font-mono font-bold`}>
+                      {parseFloat(p.daily_return * p.duration_days * 12).toLocaleString()} ETB
+                    </p>
+                  </div>
+                </div>
+
+                {isLocked ? (
+                  <button disabled className="btn-secondary w-full justify-center gap-2 cursor-not-allowed opacity-50 bg-gray-800 text-gray-400 border-gray-700">
+                    <Lock size={18} /> Locked
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => {
+                      if (window.confirm(`Buy ${p.name} for ${p.price} ETB?`)) {
+                        buyMutation.mutate(p.id);
+                      }
+                    }}
+                    disabled={buyMutation.isPending}
+                    className="btn-primary w-full justify-between"
+                  >
+                    {buyMutation.isPending ? 'Processing...' : 'Buy Now'}
+                    <ChevronRight size={18} />
+                  </button>
+                )}
+              </div>
             </div>
-            
-            <div className="relative z-10">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-xl font-serif text-sky-400">{p.name}</h3>
-                  <span className="inline-flex items-center gap-1 text-xs font-medium bg-sky-500/10 text-sky-300 px-2 py-0.5 rounded border border-sky-500/20 mt-1">
-                    Level {p.level}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-400">Price</p>
-                  <p className="text-lg font-bold text-white">{parseFloat(p.price).toLocaleString()} ETB</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="bg-gray-950 rounded-lg p-2.5 border border-gray-800">
-                  <p className="text-[10px] text-gray-500 uppercase flex items-center gap-1"><Zap size={12}/> Daily Return</p>
-                  <p className="text-green-400 font-mono font-semibold mt-0.5">+{parseFloat(p.daily_return).toLocaleString()} ETB</p>
-                </div>
-                <div className="bg-gray-950 rounded-lg p-2.5 border border-gray-800">
-                  <p className="text-[10px] text-gray-500 uppercase flex items-center gap-1"><Clock size={12}/> Duration</p>
-                  <p className="text-gray-300 font-mono font-semibold mt-0.5">{p.duration_days} Days</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 mb-5">
-                <div className="bg-gray-950 rounded-lg p-2.5 border border-gray-800 flex justify-between items-center">
-                  <p className="text-[10px] text-gray-500 uppercase">Monthly Expected</p>
-                  <p className="text-sky-400 font-mono font-bold">
-                    {parseFloat(p.daily_return * p.duration_days).toLocaleString()} ETB
-                  </p>
-                </div>
-                <div className="bg-gray-950 rounded-lg p-2.5 border border-gray-800 flex justify-between items-center">
-                  <p className="text-[10px] text-gray-500 uppercase">Yearly Expected</p>
-                  <p className="text-green-400 font-mono font-bold">
-                    {parseFloat(p.daily_return * p.duration_days * 12).toLocaleString()} ETB
-                  </p>
-                </div>
-              </div>
-
-              <button 
-                onClick={() => {
-                  if (window.confirm(`Buy ${p.name} for ${p.price} ETB?`)) {
-                    buyMutation.mutate(p.id);
-                  }
-                }}
-                disabled={buyMutation.isPending}
-                className="btn-primary w-full justify-between"
-              >
-                {buyMutation.isPending ? 'Processing...' : 'Buy Now'}
-                <ChevronRight size={18} />
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

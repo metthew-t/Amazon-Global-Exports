@@ -7,6 +7,27 @@ import { adminOnly } from '../middleware/auth.js';
 const router = express.Router();
 router.use(adminOnly);
 
+router.put('/profile', async (req, res) => {
+  try {
+    const { fullName, phone, password } = req.body;
+    if (!fullName || !phone) return res.status(400).json({ message: 'Full name and Admin ID are required' });
+
+    const existing = await db.prepare('SELECT id FROM users WHERE phone = ? AND id != ?').get(phone, req.user.id);
+    if (existing) return res.status(400).json({ message: 'Admin ID / Phone is already taken' });
+
+    if (password && password.trim().length > 0) {
+      const hash = bcrypt.hashSync(password, 10);
+      await db.prepare('UPDATE users SET full_name = ?, phone = ?, password_hash = ? WHERE id = ?').run(fullName, phone, hash, req.user.id);
+    } else {
+      await db.prepare('UPDATE users SET full_name = ?, phone = ? WHERE id = ?').run(fullName, phone, req.user.id);
+    }
+    res.json({ message: 'Profile updated' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 router.get('/dashboard', async (req, res) => {
   try {
     const totalUsers = await db.prepare('SELECT COUNT(*) as count FROM users WHERE is_admin = 0').get();

@@ -1,11 +1,25 @@
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import api from '../../lib/api';
 import { useToast } from '../../components/Toast';
 
+const DAY_LABELS = [
+  { label: 'Sun', value: 0 },
+  { label: 'Mon', value: 1 },
+  { label: 'Tue', value: 2 },
+  { label: 'Wed', value: 3 },
+  { label: 'Thu', value: 4 },
+  { label: 'Fri', value: 5 },
+  { label: 'Sat', value: 6 },
+];
+
 export default function AdminSettingsPage() {
   const queryClient = useQueryClient();
   const toast = useToast();
+
+  // Local state for allowed days (array of day numbers)
+  const [allowedDays, setAllowedDays] = useState([1, 2, 3, 4, 5, 6]);
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['adminSettings'],
@@ -13,13 +27,35 @@ export default function AdminSettingsPage() {
   });
 
   const { register, handleSubmit } = useForm({
-    values: settings ? Object.fromEntries(Object.entries(settings).map(([k,v]) => [k, v.value])) : {}
+    values: settings ? Object.fromEntries(Object.entries(settings).map(([k, v]) => [k, v.value])) : {}
   });
 
+  // Sync allowedDays from loaded settings
+  useEffect(() => {
+    if (settings?.withdrawal_allowed_days?.value) {
+      const parsed = settings.withdrawal_allowed_days.value
+        .split(',')
+        .map(Number)
+        .filter(n => !isNaN(n));
+      setAllowedDays(parsed);
+    }
+  }, [settings]);
+
+  const toggleDay = (dayVal) => {
+    setAllowedDays(prev =>
+      prev.includes(dayVal) ? prev.filter(d => d !== dayVal) : [...prev, dayVal].sort((a, b) => a - b)
+    );
+  };
+
   const saveMutation = useMutation({
-    mutationFn: async (data) => (await api.put('/admin/settings', data)).data,
+    mutationFn: async (data) => {
+      // Merge allowed days back into the form data before saving
+      const payload = { ...data, withdrawal_allowed_days: allowedDays.join(',') };
+      return (await api.put('/admin/settings', payload)).data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['adminSettings']);
+      queryClient.invalidateQueries(['supportLinks']);
       toast({ title: 'Settings saved', type: 'success' });
     }
   });
@@ -34,7 +70,7 @@ export default function AdminSettingsPage() {
         
         {/* Toggles */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-white mb-4 border-b border-gray-800 pb-2">Features & Toggles</h2>
+          <h2 className="text-lg font-semibold text-white mb-4 border-b border-gray-800 pb-2">Features &amp; Toggles</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {['daily_reward_enabled', 'meeting_reward_enabled', 'team_reward_enabled', 'lucky_wheel_enabled', 'new_member_bonus_enabled', 'invitation_reward_enabled'].map(key => (
               <div key={key} className="flex justify-between items-center p-3 bg-gray-950 rounded-lg border border-gray-800">
@@ -81,7 +117,9 @@ export default function AdminSettingsPage() {
         {/* Withdrawal Configuration */}
         <div className="card">
           <h2 className="text-lg font-semibold text-white mb-4 border-b border-gray-800 pb-2">Withdrawal Configuration</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          
+          {/* Time & Amount row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div>
               <label className="label">Min Amount (ETB)</label>
               <input type="number" {...register('min_withdrawal')} className="input" />
@@ -99,7 +137,53 @@ export default function AdminSettingsPage() {
               <input type="time" {...register('withdrawal_end_time')} className="input" />
             </div>
           </div>
+
+          {/* Allowed Days */}
+          <div className="mb-6">
+            <label className="label mb-2">Allowed Withdrawal Days</label>
+            <p className="text-xs text-gray-500 mb-3">Select which days of the week users are allowed to withdraw. Unchecked days will be blocked.</p>
+            <div className="flex flex-wrap gap-2">
+              {DAY_LABELS.map(({ label, value }) => {
+                const isActive = allowedDays.includes(value);
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => toggleDay(value)}
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-all duration-150 ${
+                      isActive
+                        ? 'bg-sky-500 border-sky-400 text-white shadow-lg shadow-sky-500/20'
+                        : 'bg-gray-950 border-gray-700 text-gray-400 hover:border-gray-500'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            {allowedDays.length === 0 && (
+              <p className="text-xs text-red-400 mt-2">⚠️ No days selected — all withdrawals will be blocked!</p>
+            )}
+            {allowedDays.length > 0 && (
+              <p className="text-xs text-gray-500 mt-2">
+                Active: {allowedDays.map(d => DAY_LABELS[d].label).join(', ')}
+              </p>
+            )}
+          </div>
+
+          {/* Quick-fill Amounts */}
+          <div>
+            <label className="label">Quick-Fill Amounts (ETB)</label>
+            <p className="text-xs text-gray-500 mb-2">Comma-separated preset amounts users can tap to fill the withdrawal form quickly.</p>
+            <input
+              type="text"
+              {...register('withdrawal_quick_amounts')}
+              className="input font-mono"
+              placeholder="500,1500,6000,15000,45000,100000"
+            />
+          </div>
         </div>
+
         <div className="card">
           <h2 className="text-lg font-semibold text-white mb-4 border-b border-gray-800 pb-2">Lucky Wheel Configuration</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

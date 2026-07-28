@@ -52,6 +52,8 @@ const migrate = async () => {
       ['withdrawal_cooldown_hours', '24', 'Hours between withdrawals'],
       ['withdrawal_start_time', '02:00', 'Daily withdrawal start time (HH:MM)'],
       ['withdrawal_end_time', '12:00', 'Daily withdrawal end time (HH:MM)'],
+      ['withdrawal_allowed_days', '1,2,3,4,5,6', 'Allowed withdrawal days (0=Sun,1=Mon,...,6=Sat, comma-separated)'],
+      ['withdrawal_quick_amounts', '500,1500,6000,15000,45000,100000', 'Quick-fill withdrawal amounts (comma-separated ETB)'],
       ['new_member_bonus_enabled', 'true', 'Enable new member bonus'],
       ['telegram_group_link', 'https://t.me/your_group_link', 'Telegram Group Link'],
       ['telegram_manager_link', 'https://t.me/your_manager_link', 'Telegram Manager Link'],

@@ -1,9 +1,20 @@
-import db from './pool.js';
+import pg from 'pg';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const { Pool } = pg;
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
 const migrate = async () => {
+  const client = await pool.connect();
   try {
+    await client.query('BEGIN');
+
     // Users table
-    await db.run(`
+    await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
         full_name TEXT NOT NULL,
@@ -21,13 +32,157 @@ const migrate = async () => {
     `);
 
     // Settings table
-    await db.run(`
+    await client.query(`
       CREATE TABLE IF NOT EXISTS settings (
         id SERIAL PRIMARY KEY,
         key TEXT UNIQUE NOT NULL,
         value TEXT NOT NULL,
         description TEXT,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Products table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS products (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        level INTEGER NOT NULL CHECK (level BETWEEN 1 AND 15),
+        price NUMERIC(15,2) NOT NULL,
+        daily_return NUMERIC(15,2) NOT NULL,
+        duration_days INTEGER NOT NULL DEFAULT 26,
+        image_url TEXT,
+        is_active SMALLINT DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Purchases table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS purchases (
+        id TEXT PRIMARY KEY,
+        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+        product_id TEXT REFERENCES products(id) ON DELETE CASCADE,
+        status TEXT DEFAULT 'active' CHECK (status IN ('active','matured')),
+        total_earned NUMERIC(15,2) DEFAULT 0.00,
+        last_claimed_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Deposits table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS deposits (
+        id TEXT PRIMARY KEY,
+        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+        bank_type TEXT NOT NULL CHECK (bank_type IN ('CBE','BOA','AWASH')),
+        transaction_id TEXT NOT NULL,
+        amount NUMERIC(15,2) NOT NULL CHECK (amount > 0),
+        status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
+        admin_note TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Withdrawals table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS withdrawals (
+        id TEXT PRIMARY KEY,
+        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+        bank_type TEXT NOT NULL CHECK (bank_type IN ('CBE','BOA','AWASH')),
+        account_number TEXT NOT NULL,
+        account_name TEXT NOT NULL,
+        amount NUMERIC(15,2) NOT NULL,
+        status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
+        admin_note TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Team rewards table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS team_rewards (
+        id TEXT PRIMARY KEY,
+        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+        team_size INTEGER NOT NULL,
+        amount NUMERIC(15,2) NOT NULL,
+        level TEXT CHECK (level IN ('A','B','C')),
+        status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Upgrade rewards table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS upgrade_rewards (
+        id TEXT PRIMARY KEY,
+        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+        vip_level INTEGER NOT NULL,
+        amount NUMERIC(15,2) NOT NULL,
+        status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Meeting codes table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS meeting_codes (
+        id TEXT PRIMARY KEY,
+        code TEXT UNIQUE NOT NULL,
+        reward_amount NUMERIC(15,2) NOT NULL,
+        max_uses INTEGER NOT NULL DEFAULT 1,
+        used_count INTEGER DEFAULT 0,
+        expires_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Meeting reward claims table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS meeting_reward_claims (
+        id TEXT PRIMARY KEY,
+        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+        meeting_code_id TEXT REFERENCES meeting_codes(id),
+        amount NUMERIC(15,2) NOT NULL,
+        status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, meeting_code_id)
+      );
+    `);
+
+    // Lucky wheel rounds table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS lucky_wheel_rounds (
+        id TEXT PRIMARY KEY,
+        status TEXT DEFAULT 'open' CHECK (status IN ('open','completed')),
+        tickets_sold INTEGER DEFAULT 0,
+        pot_amount NUMERIC(15,2) DEFAULT 0.00,
+        winners_json TEXT,
+        started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        completed_at TIMESTAMP
+      );
+    `);
+
+    // Lucky wheel tickets table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS lucky_wheel_tickets (
+        id TEXT PRIMARY KEY,
+        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+        round_id TEXT REFERENCES lucky_wheel_rounds(id),
+        is_winner SMALLINT DEFAULT 0,
+        payout NUMERIC(15,2) DEFAULT 0.00,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // New member bonus tracking table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS new_member_bonuses (
+        id TEXT PRIMARY KEY,
+        user_id TEXT REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+        bonus_percent NUMERIC(5,2) NOT NULL,
+        bonus_amount NUMERIC(15,2) NOT NULL,
+        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
@@ -98,163 +253,23 @@ const migrate = async () => {
       ['upgrade_reward_vip_15', '40000', 'Upgrade Reward for VIP Level 15'],
     ];
 
-    await db.transaction(async (txDb) => {
-      for (const [key, value, desc] of defaults) {
-        await txDb.prepare(
-          `INSERT INTO settings (key, value, description) VALUES (?, ?, ?) ON CONFLICT(key) DO NOTHING`
-        ).run(key, value, desc);
-      }
-    });
-
-    // Products table
-    await db.run(`
-      CREATE TABLE IF NOT EXISTS products (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        level INTEGER NOT NULL CHECK (level BETWEEN 1 AND 15),
-        price NUMERIC(15,2) NOT NULL,
-        daily_return NUMERIC(15,2) NOT NULL,
-        duration_days INTEGER NOT NULL DEFAULT 26,
-        image_url TEXT,
-        is_active SMALLINT DEFAULT 1,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    for (const [key, value, desc] of defaults) {
+      await client.query(
+        `INSERT INTO settings (key, value, description) VALUES ($1, $2, $3) ON CONFLICT(key) DO NOTHING`,
+        [key, value, desc]
       );
-    `);
+    }
 
-    // Purchases table
-    await db.run(`
-      CREATE TABLE IF NOT EXISTS purchases (
-        id TEXT PRIMARY KEY,
-        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-        product_id TEXT REFERENCES products(id) ON DELETE CASCADE,
-        status TEXT DEFAULT 'active' CHECK (status IN ('active','matured')),
-        total_earned NUMERIC(15,2) DEFAULT 0.00,
-        last_claimed_at TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // Deposits table
-    await db.run(`
-      CREATE TABLE IF NOT EXISTS deposits (
-        id TEXT PRIMARY KEY,
-        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-        bank_type TEXT NOT NULL CHECK (bank_type IN ('CBE','BOA','AWASH')),
-        transaction_id TEXT NOT NULL,
-        amount NUMERIC(15,2) NOT NULL CHECK (amount > 0),
-        status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
-        admin_note TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // Withdrawals table
-    await db.run(`
-      CREATE TABLE IF NOT EXISTS withdrawals (
-        id TEXT PRIMARY KEY,
-        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-        bank_type TEXT NOT NULL CHECK (bank_type IN ('CBE','BOA','AWASH')),
-        account_number TEXT NOT NULL,
-        account_name TEXT NOT NULL,
-        amount NUMERIC(15,2) NOT NULL,
-        status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
-        admin_note TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // Team rewards table
-    await db.run(`
-      CREATE TABLE IF NOT EXISTS team_rewards (
-        id TEXT PRIMARY KEY,
-        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-        team_size INTEGER NOT NULL,
-        amount NUMERIC(15,2) NOT NULL,
-        level TEXT CHECK (level IN ('A','B','C')),
-        status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // Upgrade rewards table
-    await db.run(`
-      CREATE TABLE IF NOT EXISTS upgrade_rewards (
-        id TEXT PRIMARY KEY,
-        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-        vip_level INTEGER NOT NULL,
-        amount NUMERIC(15,2) NOT NULL,
-        status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // Meeting codes table
-    await db.run(`
-      CREATE TABLE IF NOT EXISTS meeting_codes (
-        id TEXT PRIMARY KEY,
-        code TEXT UNIQUE NOT NULL,
-        reward_amount NUMERIC(15,2) NOT NULL,
-        max_uses INTEGER NOT NULL DEFAULT 1,
-        used_count INTEGER DEFAULT 0,
-        expires_at TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // Meeting reward claims
-    await db.run(`
-      CREATE TABLE IF NOT EXISTS meeting_reward_claims (
-        id TEXT PRIMARY KEY,
-        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-        meeting_code_id TEXT REFERENCES meeting_codes(id),
-        amount NUMERIC(15,2) NOT NULL,
-        status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(user_id, meeting_code_id)
-      );
-    `);
-
-    // Lucky wheel rounds
-    await db.run(`
-      CREATE TABLE IF NOT EXISTS lucky_wheel_rounds (
-        id TEXT PRIMARY KEY,
-        status TEXT DEFAULT 'open' CHECK (status IN ('open','completed')),
-        tickets_sold INTEGER DEFAULT 0,
-        pot_amount NUMERIC(15,2) DEFAULT 0.00,
-        winners_json TEXT,
-        started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        completed_at TIMESTAMP
-      );
-    `);
-
-    // Lucky wheel tickets
-    await db.run(`
-      CREATE TABLE IF NOT EXISTS lucky_wheel_tickets (
-        id TEXT PRIMARY KEY,
-        user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-        round_id TEXT REFERENCES lucky_wheel_rounds(id),
-        is_winner SMALLINT DEFAULT 0,
-        payout NUMERIC(15,2) DEFAULT 0.00,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // New member bonus tracking
-    await db.run(`
-      CREATE TABLE IF NOT EXISTS new_member_bonuses (
-        id TEXT PRIMARY KEY,
-        user_id TEXT REFERENCES users(id) ON DELETE CASCADE UNIQUE,
-        bonus_percent NUMERIC(5,2) NOT NULL,
-        bonus_amount NUMERIC(15,2) NOT NULL,
-        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
+    await client.query('COMMIT');
     console.log('✅ Migration completed successfully');
-    process.exit(0);
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('❌ Migration failed:', err);
     process.exit(1);
+  } finally {
+    client.release();
+    await pool.end();
+    process.exit(0);
   }
 };
 

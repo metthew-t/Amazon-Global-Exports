@@ -23,9 +23,8 @@ jobs:
         with:
           node-version: '22.x'
 
-      - name: Install and build backend
+      - name: npm install, build, and test
         run: |
-          cd backend
           npm install
           npm run build --if-present
           npm run test --if-present
@@ -34,7 +33,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: backend
+          path: .
 
   deploy:
     runs-on: ubuntu-latest
@@ -52,9 +51,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_940961014942448A998D2121772FAC83 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C520348DA6EC428EB737E7C11194E12D }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_F7D4746AE3D3496DBF3BE97238C5BEA4 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_64730DA327D24DE0AB75BBB305C45C4E }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0EC026C895754A6BB2D2AA924389BA25 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0798E4ACC2BA4F36B17F17FE7C37DDBB }}
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
@@ -63,3 +62,4 @@ jobs:
           app-name: 'amazon-global-exports'
           slot-name: 'Production'
           package: .
+          

@@ -11,8 +11,8 @@ const migrate = async () => {
         password_hash TEXT NOT NULL,
         referral_code TEXT UNIQUE NOT NULL,
         referred_by_id TEXT REFERENCES users(id) ON DELETE SET NULL,
-        balance REAL DEFAULT 0.00,
-        is_admin INTEGER DEFAULT 0,
+        balance NUMERIC(15,2) DEFAULT 0.00,
+        is_admin SMALLINT DEFAULT 0,
         bank_type TEXT,
         account_number TEXT,
         account_name TEXT,
@@ -100,7 +100,9 @@ const migrate = async () => {
 
     await db.transaction(async (txDb) => {
       for (const [key, value, desc] of defaults) {
-        await txDb.prepare(`INSERT INTO settings (key, value, description) VALUES (?, ?, ?) ON CONFLICT(key) DO NOTHING`).run(key, value, desc);
+        await txDb.prepare(
+          `INSERT INTO settings (key, value, description) VALUES (?, ?, ?) ON CONFLICT(key) DO NOTHING`
+        ).run(key, value, desc);
       }
     });
 
@@ -110,11 +112,11 @@ const migrate = async () => {
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         level INTEGER NOT NULL CHECK (level BETWEEN 1 AND 15),
-        price REAL NOT NULL,
-        daily_return REAL NOT NULL,
+        price NUMERIC(15,2) NOT NULL,
+        daily_return NUMERIC(15,2) NOT NULL,
         duration_days INTEGER NOT NULL DEFAULT 26,
         image_url TEXT,
-        is_active INTEGER DEFAULT 1,
+        is_active SMALLINT DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -126,7 +128,7 @@ const migrate = async () => {
         user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
         product_id TEXT REFERENCES products(id) ON DELETE CASCADE,
         status TEXT DEFAULT 'active' CHECK (status IN ('active','matured')),
-        total_earned REAL DEFAULT 0.00,
+        total_earned NUMERIC(15,2) DEFAULT 0.00,
         last_claimed_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -139,7 +141,7 @@ const migrate = async () => {
         user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
         bank_type TEXT NOT NULL CHECK (bank_type IN ('CBE','BOA','AWASH')),
         transaction_id TEXT NOT NULL,
-        amount REAL NOT NULL CHECK (amount > 0),
+        amount NUMERIC(15,2) NOT NULL CHECK (amount > 0),
         status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
         admin_note TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -154,7 +156,7 @@ const migrate = async () => {
         bank_type TEXT NOT NULL CHECK (bank_type IN ('CBE','BOA','AWASH')),
         account_number TEXT NOT NULL,
         account_name TEXT NOT NULL,
-        amount REAL NOT NULL,
+        amount NUMERIC(15,2) NOT NULL,
         status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
         admin_note TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -167,7 +169,7 @@ const migrate = async () => {
         id TEXT PRIMARY KEY,
         user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
         team_size INTEGER NOT NULL,
-        amount REAL NOT NULL,
+        amount NUMERIC(15,2) NOT NULL,
         level TEXT CHECK (level IN ('A','B','C')),
         status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -180,7 +182,7 @@ const migrate = async () => {
         id TEXT PRIMARY KEY,
         user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
         vip_level INTEGER NOT NULL,
-        amount REAL NOT NULL,
+        amount NUMERIC(15,2) NOT NULL,
         status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -191,7 +193,7 @@ const migrate = async () => {
       CREATE TABLE IF NOT EXISTS meeting_codes (
         id TEXT PRIMARY KEY,
         code TEXT UNIQUE NOT NULL,
-        reward_amount REAL NOT NULL,
+        reward_amount NUMERIC(15,2) NOT NULL,
         max_uses INTEGER NOT NULL DEFAULT 1,
         used_count INTEGER DEFAULT 0,
         expires_at TIMESTAMP,
@@ -205,7 +207,7 @@ const migrate = async () => {
         id TEXT PRIMARY KEY,
         user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
         meeting_code_id TEXT REFERENCES meeting_codes(id),
-        amount REAL NOT NULL,
+        amount NUMERIC(15,2) NOT NULL,
         status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(user_id, meeting_code_id)
@@ -218,7 +220,7 @@ const migrate = async () => {
         id TEXT PRIMARY KEY,
         status TEXT DEFAULT 'open' CHECK (status IN ('open','completed')),
         tickets_sold INTEGER DEFAULT 0,
-        pot_amount REAL DEFAULT 0.00,
+        pot_amount NUMERIC(15,2) DEFAULT 0.00,
         winners_json TEXT,
         started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         completed_at TIMESTAMP
@@ -231,8 +233,8 @@ const migrate = async () => {
         id TEXT PRIMARY KEY,
         user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
         round_id TEXT REFERENCES lucky_wheel_rounds(id),
-        is_winner INTEGER DEFAULT 0,
-        payout REAL DEFAULT 0.00,
+        is_winner SMALLINT DEFAULT 0,
+        payout NUMERIC(15,2) DEFAULT 0.00,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -242,8 +244,8 @@ const migrate = async () => {
       CREATE TABLE IF NOT EXISTS new_member_bonuses (
         id TEXT PRIMARY KEY,
         user_id TEXT REFERENCES users(id) ON DELETE CASCADE UNIQUE,
-        bonus_percent REAL NOT NULL,
-        bonus_amount REAL NOT NULL,
+        bonus_percent NUMERIC(5,2) NOT NULL,
+        bonus_amount NUMERIC(15,2) NOT NULL,
         applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);

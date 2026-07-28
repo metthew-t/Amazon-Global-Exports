@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: amazon-global-exports
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # You must set this to your Azure PostgreSQL connection string in the Render Dashboard
+      - key: JWT_SECRET
+        generateValue: true

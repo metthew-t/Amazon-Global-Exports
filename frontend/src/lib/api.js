@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://amazon-global-exports.onrender.com/api',
+  baseURL: import.meta.env.VITE_API_URL, // This should NOT have /api at the end
   withCredentials: true,
   timeout: 30000,
   headers: {

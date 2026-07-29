@@ -44,6 +44,8 @@ app.use('/api/lucky-wheel', luckyWheelRoutes);
 app.use('/api/meetings', meetingRoutes);
 app.use('/api/upgrades', upgradeRoutes);
 app.use('/api/admin', adminRoutes);
+console.log('Routes mounted:');
+console.log('  /api/auth - auth routes');
 
 app.get('/api', (req, res) => res.json({ message: 'AGE API Running' }));
 

@@ -28,7 +28,7 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'frontend/dist',  // ← CHANGED THIS
+    outDir: 'dist',  // ← CHANGED THIS
     sourcemap: false
   },
   base: '/'

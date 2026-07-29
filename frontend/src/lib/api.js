@@ -9,10 +9,10 @@ const api = axios.create({
   },
 });
 
-// Add a request interceptor to log requests (for debugging)
+// Log requests for debugging
 api.interceptors.request.use(
   (config) => {
-    console.log('Making request to:', config.url);
+    console.log('🌐 API Request:', config.method.toUpperCase(), config.url);
     return config;
   },
   (error) => {
@@ -23,7 +23,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    console.error('API Error:', err.response?.status, err.response?.data);
+    console.error('❌ API Error:', err.response?.status, err.response?.data);
     if (err.response?.status === 401) {
       const path = window.location.pathname;
       if (path !== '/login' && path !== '/register' && path !== '/admin/login') {

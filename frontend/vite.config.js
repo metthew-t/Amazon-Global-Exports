@@ -4,7 +4,6 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [
     react(),
-    // This plugin correctly handles client-side routing
     {
       name: 'spa-redirect',
       apply: 'build',
@@ -29,9 +28,8 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'dist',
+    outDir: 'frontend/dist',  // ← CHANGED THIS
     sourcemap: false
   },
-  // This is CRUCIAL: it tells Vite your app is served from the root
   base: '/'
 })

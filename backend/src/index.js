@@ -24,12 +24,13 @@ app.use(cors({
   origin: [
     process.env.FRONTEND_URL, 
     'https://amazon-global-exports-web.onrender.com', 
-    'http://localhost:5173'
+    'http://localhost:5173',
+    'http://localhost:3000'
   ].filter(Boolean),
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
 }));
-app.use(express.json());
-app.use(cookieParser());
 
 // Routes
 app.use('/api/auth', authRoutes);

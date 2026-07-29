@@ -4,6 +4,9 @@ import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import db from '../db/pool.js';
 import { protect } from '../middleware/auth.js';
+console.log('Auth routes loaded');
+console.log('POST /register route defined');
+console.log('POST /login route defined');
 
 const router = express.Router();
 

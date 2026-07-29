@@ -8,6 +8,8 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+console.log('🔍 API Base URL:', import.meta.env.VITE_API_URL);
+console.log('🔍 Full API baseURL:', api.defaults.baseURL);
 
 // Log requests for debugging
 api.interceptors.request.use(

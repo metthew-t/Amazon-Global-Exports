@@ -3,11 +3,27 @@ import axios from 'axios';
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'https://amazon-global-exports.onrender.com/api',
   withCredentials: true,
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
+
+// Add a request interceptor to log requests (for debugging)
+api.interceptors.request.use(
+  (config) => {
+    console.log('Making request to:', config.url);
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 api.interceptors.response.use(
   (res) => res,
   (err) => {
+    console.error('API Error:', err.response?.status, err.response?.data);
     if (err.response?.status === 401) {
       const path = window.location.pathname;
       if (path !== '/login' && path !== '/register' && path !== '/admin/login') {

@@ -1,17 +1,20 @@
 import axios from 'axios';
 
+// TEMPORARILY HARDCODE THE FULL URL WITH /api
+const API_URL = 'https://amazon-global-exports.onrender.com/api';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // This should NOT have /api at the end
+  baseURL: API_URL,  // Hardcoded for testing
   withCredentials: true,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
-console.log('🔍 API Base URL:', import.meta.env.VITE_API_URL);
+
+console.log('🔍 API Base URL:', API_URL);
 console.log('🔍 Full API baseURL:', api.defaults.baseURL);
 
-// Log requests for debugging
 api.interceptors.request.use(
   (config) => {
     console.log('🌐 API Request:', config.method.toUpperCase(), config.url);

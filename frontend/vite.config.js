@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [
     react(),
-    // Custom plugin to handle SPA routing on Render
+    // This plugin correctly handles client-side routing
     {
       name: 'spa-redirect',
       apply: 'build',
@@ -24,19 +24,14 @@ export default defineConfig({
       '/api': {
         target: 'https://amazon-global-exports.onrender.com',
         changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api/, '/api')
+        secure: false
       }
     }
   },
   build: {
     outDir: 'dist',
-    sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks: undefined
-      }
-    }
+    sourcemap: false
   },
+  // This is CRUCIAL: it tells Vite your app is served from the root
   base: '/'
 })

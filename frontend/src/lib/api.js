@@ -1,10 +1,9 @@
 import axios from 'axios';
 
-// TEMPORARILY HARDCODE THE FULL URL WITH /api
-const API_URL = 'https://amazon-global-exports.onrender.com/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://amazon-global-exports.onrender.com/api';
 
 const api = axios.create({
-  baseURL: API_URL,  // Hardcoded for testing
+  baseURL: API_URL,
   withCredentials: true,
   timeout: 30000,
   headers: {
@@ -12,17 +11,16 @@ const api = axios.create({
   },
 });
 
-console.log('🔍 API Base URL:', API_URL);
-console.log('🔍 Full API baseURL:', api.defaults.baseURL);
-
+// Attach token from localStorage to every request
 api.interceptors.request.use(
   (config) => {
-    console.log('🌐 API Request:', config.method.toUpperCase(), config.url);
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 api.interceptors.response.use(

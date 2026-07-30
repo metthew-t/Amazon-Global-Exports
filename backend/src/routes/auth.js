@@ -51,10 +51,11 @@ const generateReferralCode = (fullName) => {
 
 const setTokenCookie = (res, userId) => {
   const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
+  const isProduction = process.env.NODE_ENV === 'production';
   res.cookie('token', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
   return token;
@@ -95,8 +96,8 @@ router.post('/register', async (req, res) => {
     const token = setTokenCookie(res, user.id);
     res.status(201).json({ user, token });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('🔥 CRASH in auth route:', err);
+    res.status(500).json({ message: 'Server error: ' + (err.message || err.toString()) });
   }
 });
 
@@ -116,8 +117,8 @@ router.post('/login', async (req, res) => {
     const { password_hash, ...safeUser } = user;
     res.json({ user: safeUser, token });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('🔥 CRASH in auth route:', err);
+    res.status(500).json({ message: 'Server error: ' + (err.message || err.toString()) });
   }
 });
 
@@ -135,8 +136,8 @@ router.post('/admin/login', async (req, res) => {
     const { password_hash, ...safeUser } = user;
     res.json({ user: safeUser, token });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('🔥 CRASH in auth route:', err);
+    res.status(500).json({ message: 'Server error: ' + (err.message || err.toString()) });
   }
 });
 

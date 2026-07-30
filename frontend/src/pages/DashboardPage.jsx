@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext.jsx';
 import api from '../lib/api';
 import { Wallet, Package, ArrowDownCircle, ArrowUpCircle, Users, Activity } from 'lucide-react';
 

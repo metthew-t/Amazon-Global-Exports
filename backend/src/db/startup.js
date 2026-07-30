@@ -252,7 +252,7 @@ export async function runMigrateAndSeed() {
 
   for (const [key, value, desc] of defaults) {
     await db.run(
-      `INSERT INTO settings (key, value, description) VALUES ($1, $2, $3) ON CONFLICT(key) DO UPDATE SET value = EXCLUDED.value WHERE settings.value LIKE '%your_group_link%' OR settings.value LIKE '%your_manager_link%' OR settings.value = '' OR settings.value = '#'`,
+      `INSERT INTO settings (key, value, description) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = EXCLUDED.value WHERE settings.value LIKE '%your_group_link%' OR settings.value LIKE '%your_manager_link%' OR settings.value = '' OR settings.value = '#'`,
       key, value, desc
     );
   }

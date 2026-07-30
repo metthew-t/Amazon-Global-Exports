@@ -26,7 +26,7 @@ const statusBadgeClass = {
 };
 
 const schema = z.object({
-  bankType: z.enum(['CBE', 'AWASH'], { required_error: 'Please select a bank' }),
+  bankType: z.enum(['CBE', 'AWASH', 'BOA'], { required_error: 'Please select a bank' }),
   amount: z.number({ invalid_type_error: 'Amount must be a number' }).min(100, 'Minimum deposit is 100 ETB'),
   transactionId: z.string()
     .min(5, 'Transaction ID must be at least 5 characters')
@@ -42,9 +42,11 @@ const schema = z.object({
   }
 });
 
-const bankAccounts = {
+// Fallback bank accounts (used if API is unavailable)
+const FALLBACK_BANKS = {
   CBE: { name: 'Commercial Bank of Ethiopia (CBE)', account: '1000540699236' },
   AWASH: { name: 'Awash Bank', account: '013351516497900' },
+  BOA: { name: 'Bank of Abyssinia (BOA)', account: '189018436' },
 };
 
 export default function DepositPage() {
@@ -58,6 +60,15 @@ export default function DepositPage() {
     queryKey: ['supportLinks'],
     queryFn: async () => (await api.get('/dashboard/support')).data,
   });
+
+  // Fetch bank accounts from settings API
+  const { data: bankAccounts } = useQuery({
+    queryKey: ['depositBanks'],
+    queryFn: async () => (await api.get('/dashboard/deposit-banks')).data,
+  });
+
+  // Use API data if available, otherwise fallback
+  const banks = bankAccounts || FALLBACK_BANKS;
 
   const { data: history, isLoading } = useQuery({
     queryKey: ['deposits'],
@@ -119,7 +130,7 @@ export default function DepositPage() {
             <div className="card border-sky-500/20 bg-sky-900/5">
               <label className="label mb-3">1. Select Payment Bank</label>
               <div className="grid grid-cols-3 gap-2">
-                {Object.keys(bankAccounts).map((bank) => (
+                {Object.keys(banks).map((bank) => (
                   <label key={bank} className={`
                     border rounded-lg p-2 text-center cursor-pointer transition-all
                     ${selectedBank === bank ? 'border-sky-500 bg-sky-500/10 text-sky-400' : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-500'}
@@ -131,17 +142,17 @@ export default function DepositPage() {
               </div>
               {errors.bankType && <p className="form-error">{errors.bankType.message}</p>}
 
-              {selectedBank && (
+              {selectedBank && banks[selectedBank] && (
                 <div className="mt-4 p-4 bg-gray-950 rounded-lg border border-gray-800 text-center">
                   <p className="text-xs text-gray-500 mb-1">Transfer exact amount to:</p>
-                  <p className="font-medium text-sm text-gray-300 mb-2">{bankAccounts[selectedBank].name}</p>
+                  <p className="font-medium text-sm text-gray-300 mb-2">{banks[selectedBank].name}</p>
                   <div className="flex items-center justify-center gap-3">
                     <p className="text-2xl font-bold text-sky-400 font-mono tracking-wider">
-                      {bankAccounts[selectedBank].account}
+                      {banks[selectedBank].account}
                     </p>
                     <button 
                       type="button" 
-                      onClick={() => copyToClipboard(bankAccounts[selectedBank].account)}
+                      onClick={() => copyToClipboard(banks[selectedBank].account)}
                       className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-400 transition-colors"
                     >
                       {copied ? <CheckCircle size={18} className="text-green-400" /> : <Copy size={18} />}

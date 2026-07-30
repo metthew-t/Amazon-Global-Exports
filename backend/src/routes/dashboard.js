@@ -37,4 +37,25 @@ router.get('/support', protect, async (req, res) => {
   }
 });
 
+// Serve deposit bank accounts from settings (user-facing)
+router.get('/deposit-banks', protect, async (req, res) => {
+  try {
+    const cbeAccount = await db.prepare("SELECT value FROM settings WHERE key = 'bank_cbe_account'").get()?.value || '1000540699236';
+    const cbeName = await db.prepare("SELECT value FROM settings WHERE key = 'bank_cbe_name'").get()?.value || 'Commercial Bank of Ethiopia (CBE)';
+    const awashAccount = await db.prepare("SELECT value FROM settings WHERE key = 'bank_awash_account'").get()?.value || '013351516497900';
+    const awashName = await db.prepare("SELECT value FROM settings WHERE key = 'bank_awash_name'").get()?.value || 'Awash Bank';
+    const boaAccount = await db.prepare("SELECT value FROM settings WHERE key = 'bank_boa_account'").get()?.value || '189018436';
+    const boaName = await db.prepare("SELECT value FROM settings WHERE key = 'bank_boa_name'").get()?.value || 'Bank of Abyssinia (BOA)';
+
+    res.json({
+      CBE: { name: cbeName, account: cbeAccount },
+      AWASH: { name: awashName, account: awashAccount },
+      BOA: { name: boaName, account: boaAccount },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 export default router;

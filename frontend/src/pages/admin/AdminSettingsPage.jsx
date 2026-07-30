@@ -56,6 +56,10 @@ export default function AdminSettingsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries(['adminSettings']);
       queryClient.invalidateQueries(['supportLinks']);
+      queryClient.invalidateQueries(['depositBanks']);
+      queryClient.invalidateQueries(['withdrawalSettings']);
+      queryClient.invalidateQueries(['luckyWheelCurrent']);
+      queryClient.invalidateQueries(['dashboardSummary']);
       toast({ title: 'Settings saved', type: 'success' });
     }
   });

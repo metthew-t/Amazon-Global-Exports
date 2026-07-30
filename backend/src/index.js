@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { runMigrateAndSeed } from './db/startup.js';
 import authRoutes from './routes/auth.js';
 import productRoutes from './routes/products.js';
 import depositRoutes from './routes/deposits.js';
@@ -47,11 +48,19 @@ app.use('/api/lucky-wheel', luckyWheelRoutes);
 app.use('/api/meetings', meetingRoutes);
 app.use('/api/upgrades', upgradeRoutes);
 app.use('/api/admin', adminRoutes);
-console.log('Routes mounted:');
-console.log('  /api/auth - auth routes');
 
 app.get('/api', (req, res) => res.json({ message: 'AGE API Running' }));
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Run migration + seed, then start server
+runMigrateAndSeed()
+  .then(() => {
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch((err) => {
+    console.error('❌ Startup failed:', err);
+    // Start server anyway so Render doesn't kill the service
+    app.listen(PORT, () => console.log(`Server running on port ${PORT} (migration failed)`));
+  });
+

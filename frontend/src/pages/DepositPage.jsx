@@ -236,13 +236,7 @@ export default function DepositPage() {
                 url = url.trim();
                 if (!url || url === '#') return;
                 if (!url.startsWith('http://') && !url.startsWith('https://')) url = `https://${url}`;
-                const a = document.createElement('a');
-                a.href = url;
-                a.target = '_blank';
-                a.rel = 'noreferrer';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                window.open(url, '_blank', 'noopener,noreferrer');
               }}
               className="btn-primary w-full py-3 text-base flex items-center justify-center gap-2"
             >

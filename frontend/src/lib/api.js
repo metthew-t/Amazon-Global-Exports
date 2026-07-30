@@ -31,7 +31,7 @@ api.interceptors.response.use(
     console.error('❌ API Error:', err.response?.status, err.response?.data);
     if (err.response?.status === 401) {
       const path = window.location.pathname;
-      if (path !== '/login' && path !== '/register' && path !== '/admin/login') {
+      if (!path.startsWith('/login') && !path.startsWith('/register') && !path.startsWith('/admin/login')) {
         window.location.href = '/login';
       }
     }

@@ -4,11 +4,17 @@ dotenv.config();
 
 const { Pool } = pg;
 
+const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/postgres';
+const needsSsl = process.env.NODE_ENV === 'production' || 
+  dbUrl.includes('render.com') || 
+  dbUrl.includes('azure') || 
+  dbUrl.includes('sslmode=require') ||
+  dbUrl.includes('neon.tech') ||
+  dbUrl.includes('.com');
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/postgres',
-  ssl: process.env.DATABASE_URL?.includes('azure') || process.env.DATABASE_URL?.includes('sslmode=require')
-    ? { rejectUnauthorized: false }
-    : false,
+  connectionString: dbUrl,
+  ssl: needsSsl ? { rejectUnauthorized: false } : false,
 });
 
 // Helper to convert SQLite '?' to PostgreSQL '$1, $2, ...'

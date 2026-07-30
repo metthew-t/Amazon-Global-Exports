@@ -207,8 +207,8 @@ export async function runMigrateAndSeed() {
     ['withdrawal_allowed_days', '1,2,3,4,5,6', 'Allowed withdrawal days'],
     ['withdrawal_quick_amounts', '500,1500,6000,15000,45000,100000', 'Quick-fill withdrawal amounts'],
     ['new_member_bonus_enabled', 'true', 'Enable new member bonus'],
-    ['telegram_group_link', 'https://t.me/your_group_link', 'Telegram Group Link'],
-    ['telegram_manager_link', 'https://t.me/your_manager_link', 'Telegram Manager Link'],
+    ['telegram_group_link', 'https://t.me/+hDXOF4YstMcwMzQ0', 'Telegram Group Link'],
+    ['telegram_manager_link', 'https://t.me/AGEs1122', 'Telegram Manager Link'],
     ['new_member_bonus_min_percent', '3', 'Min bonus % on first deposit'],
     ['new_member_bonus_max_percent', '5', 'Max bonus % on first deposit'],
     ['invitation_reward_enabled', 'true', 'Enable direct invitation reward'],
@@ -252,7 +252,7 @@ export async function runMigrateAndSeed() {
 
   for (const [key, value, desc] of defaults) {
     await db.run(
-      `INSERT INTO settings (key, value, description) VALUES ($1, $2, $3) ON CONFLICT(key) DO NOTHING`,
+      `INSERT INTO settings (key, value, description) VALUES ($1, $2, $3) ON CONFLICT(key) DO UPDATE SET value = EXCLUDED.value WHERE settings.value LIKE '%your_group_link%' OR settings.value LIKE '%your_manager_link%' OR settings.value = '' OR settings.value = '#'`,
       key, value, desc
     );
   }

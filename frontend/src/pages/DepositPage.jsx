@@ -230,8 +230,9 @@ export default function DepositPage() {
 
             <a
               href={supportLinks?.managerLink && supportLinks.managerLink !== '#' ? (supportLinks.managerLink.startsWith('http') ? supportLinks.managerLink : `https://${supportLinks.managerLink}`) : '#'}
-              target="_blank"
+              target={supportLinks?.managerLink && supportLinks.managerLink !== '#' ? "_blank" : "_self"}
               rel="noopener noreferrer"
+              onClick={(e) => { if (!supportLinks?.managerLink || supportLinks.managerLink === '#') e.preventDefault(); }}
               className="btn-primary w-full py-3 text-base flex items-center justify-center gap-2"
             >
               <MessageCircle size={20} />

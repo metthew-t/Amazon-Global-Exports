@@ -2,14 +2,18 @@ import { useQuery } from '@tanstack/react-query';
 import api from '../lib/api';
 import { MessageCircle, Users, ExternalLink } from 'lucide-react';
 
-function openExternalLink(rawUrl) {
-  if (!rawUrl || typeof rawUrl !== 'string') return;
-  let url = rawUrl.trim();
-  if (!url || url === '#') return;
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    url = `https://${url}`;
+const FALLBACK_MANAGER_LINK = 'https://t.me/AGEs1122';
+const FALLBACK_GROUP_LINK = 'https://t.me/+hDXOF4YstMcwMzQ0';
+
+function resolveLink(apiValue, fallback) {
+  // Use API value if it's a real link, otherwise fall back to hardcoded
+  if (apiValue && typeof apiValue === 'string') {
+    const trimmed = apiValue.trim();
+    if (trimmed && trimmed !== '#' && !trimmed.includes('your_group_link') && !trimmed.includes('your_manager_link')) {
+      return trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
+    }
   }
-  window.open(url, '_blank', 'noopener,noreferrer');
+  return fallback;
 }
 
 export default function SupportPage() {
@@ -20,6 +24,9 @@ export default function SupportPage() {
 
   if (isLoading) return <div className="text-center py-10 text-gray-500">Loading...</div>;
 
+  const managerUrl = resolveLink(support?.managerLink, FALLBACK_MANAGER_LINK);
+  const groupUrl = resolveLink(support?.groupLink, FALLBACK_GROUP_LINK);
+
   return (
     <div className="space-y-6">
       <div>
@@ -29,10 +36,9 @@ export default function SupportPage() {
 
       <div className="card-gold space-y-4">
         <a
-          href={support?.managerLink && support.managerLink !== '#' ? (support.managerLink.startsWith('http') ? support.managerLink : `https://${support.managerLink}`) : '#'}
-          target={support?.managerLink && support.managerLink !== '#' ? "_blank" : "_self"}
+          href={managerUrl}
+          target="_blank"
           rel="noopener noreferrer"
-          onClick={(e) => { if (!support?.managerLink || support.managerLink === '#') e.preventDefault(); }}
           className="w-full flex items-center justify-between p-4 bg-gray-900 border border-sky-600/30 rounded-xl hover:bg-sky-500/10 transition-colors group cursor-pointer"
         >
           <div className="flex items-center gap-3">
@@ -48,10 +54,9 @@ export default function SupportPage() {
         </a>
 
         <a
-          href={support?.groupLink && support.groupLink !== '#' ? (support.groupLink.startsWith('http') ? support.groupLink : `https://${support.groupLink}`) : '#'}
-          target={support?.groupLink && support.groupLink !== '#' ? "_blank" : "_self"}
+          href={groupUrl}
+          target="_blank"
           rel="noopener noreferrer"
-          onClick={(e) => { if (!support?.groupLink || support.groupLink === '#') e.preventDefault(); }}
           className="w-full flex items-center justify-between p-4 bg-gray-900 border border-gray-700 rounded-xl hover:bg-gray-800 transition-colors group cursor-pointer"
         >
           <div className="flex items-center gap-3">

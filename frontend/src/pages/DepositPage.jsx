@@ -7,6 +7,18 @@ import api from '../lib/api';
 import { useToast } from '../components/Toast';
 import { ArrowDownCircle, Copy, CheckCircle, Clock, MessageCircle, X, Send } from 'lucide-react';
 
+const FALLBACK_MANAGER_LINK = 'https://t.me/AGEs1122';
+
+function resolveManagerLink(apiValue) {
+  if (apiValue && typeof apiValue === 'string') {
+    const trimmed = apiValue.trim();
+    if (trimmed && trimmed !== '#' && !trimmed.includes('your_manager_link')) {
+      return trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
+    }
+  }
+  return FALLBACK_MANAGER_LINK;
+}
+
 const statusBadgeClass = {
   pending: 'inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-300 border border-yellow-500/30',
   approved: 'inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-300 border border-green-500/30',
@@ -229,10 +241,9 @@ export default function DepositPage() {
             </div>
 
             <a
-              href={supportLinks?.managerLink && supportLinks.managerLink !== '#' ? (supportLinks.managerLink.startsWith('http') ? supportLinks.managerLink : `https://${supportLinks.managerLink}`) : '#'}
-              target={supportLinks?.managerLink && supportLinks.managerLink !== '#' ? "_blank" : "_self"}
+              href={resolveManagerLink(supportLinks?.managerLink)}
+              target="_blank"
               rel="noopener noreferrer"
-              onClick={(e) => { if (!supportLinks?.managerLink || supportLinks.managerLink === '#') e.preventDefault(); }}
               className="btn-primary w-full py-3 text-base flex items-center justify-center gap-2"
             >
               <MessageCircle size={20} />

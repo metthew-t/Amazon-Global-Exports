@@ -29,12 +29,6 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     console.error('❌ API Error:', err.response?.status, err.response?.data);
-    if (err.response?.status === 401) {
-      const path = window.location.pathname;
-      if (!path.startsWith('/login') && !path.startsWith('/register') && !path.startsWith('/admin/login')) {
-        window.location.href = '/login';
-      }
-    }
     return Promise.reject(err);
   }
 );

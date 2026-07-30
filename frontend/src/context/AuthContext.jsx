@@ -1,48 +1,42 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import api from '../lib/api';
+import axios from 'axios';
 
-const AuthContext = createContext(null);
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'https://amazon-global-exports.onrender.com/api',
+  withCredentials: true,
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+// Log requests for debugging
+api.interceptors.request.use(
+  (config) => {
+    console.log('🌐 API Request:', config.method.toUpperCase(), config.url);
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
-  useEffect(() => {
-    api.get('/auth/me')
-      .then(res => setUser(res.data.user))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
-  }, []);
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    console.error('❌ API Error:', err.response?.status, err.response?.data);
+    
+    // Only redirect for 401 if NOT already on login/register pages
+    if (err.response?.status === 401) {
+      const path = window.location.pathname;
+      // Don't redirect if already on auth pages
+      if (!['/login', '/register', '/admin/login'].includes(path)) {
+        // Clear any stale token
+        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(err);
+  }
+);
 
-  const login = async (phone, password) => {
-    const res = await api.post('/auth/login', { phone, password });
-    setUser(res.data.user);
-    return res.data.user;
-  };
-
-  const adminLogin = async (phone, password) => {
-    const res = await api.post('/auth/admin/login', { phone, password });
-    setUser(res.data.user);
-    return res.data.user;
-  };
-
-  const register = async (data) => {
-    const res = await api.post('/auth/register', data);
-    setUser(res.data.user);
-    return res.data.user;
-  };
-
-  const logout = async () => {
-    await api.post('/auth/logout');
-    setUser(null);
-    window.location.href = '/login';
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, loading, login, adminLogin, register, logout, setUser }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
-
-export const useAuth = () => useContext(AuthContext);
+export default api;

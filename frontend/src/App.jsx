@@ -39,22 +39,63 @@ import AdminProfilePage from './pages/admin/AdminProfilePage';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" /></div>;
-  if (!user) return <Navigate to="/login" replace />;
+  
+  // Show loading spinner while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+  
+  // If not logged in, redirect to login
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
   return children;
 }
 
 function AdminRoute({ children }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" /></div>;
-  if (!user || !user.is_admin) return <Navigate to="/login" replace />;
+  
+  // Show loading spinner while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+  
+  // If not logged in or not admin, redirect to login
+  if (!user || !user.is_admin) {
+    return <Navigate to="/login" replace />;
+  }
+  
   return children;
 }
 
 function PublicRoute({ children }) {
   const { user, loading } = useAuth();
-  if (loading) return null;
-  if (user) return <Navigate to={user.is_admin ? '/admin/dashboard' : '/dashboard'} replace />;
+  
+  // Wait for auth to load before deciding
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+  
+  // If user is already logged in, redirect to appropriate dashboard
+  if (user) {
+    const dashboardPath = user.is_admin ? '/admin/dashboard' : '/dashboard';
+    return <Navigate to={dashboardPath} replace />;
+  }
+  
+  // Show the public page (login, register, etc.)
   return children;
 }
 
@@ -63,12 +104,12 @@ export default function App() {
     <BrowserRouter>
       <ToastProvider>
         <Routes>
-          {/* Public */}
+          {/* Public Routes - accessible without login */}
           <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
           <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/admin/login" element={<PublicRoute><AdminLoginPage /></PublicRoute>} />
 
-          {/* User */}
+          {/* User Routes - require login */}
           <Route path="/" element={<ProtectedRoute><UserLayout /></ProtectedRoute>}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
@@ -88,7 +129,7 @@ export default function App() {
             <Route path="support" element={<SupportPage />} />
           </Route>
 
-          {/* Admin */}
+          {/* Admin Routes - require admin privileges */}
           <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
             <Route path="dashboard" element={<AdminDashboardPage />} />
             <Route path="users" element={<AdminUsersPage />} />
@@ -106,6 +147,7 @@ export default function App() {
             <Route path="profile" element={<AdminProfilePage />} />
           </Route>
 
+          {/* Catch-all route - redirect to dashboard */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </ToastProvider>

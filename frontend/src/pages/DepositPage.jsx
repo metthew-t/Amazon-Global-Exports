@@ -228,21 +228,15 @@ export default function DepositPage() {
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                let url = supportLinks?.managerLink;
-                if (!url || typeof url !== 'string') return;
-                url = url.trim();
-                if (!url || url === '#') return;
-                if (!url.startsWith('http://') && !url.startsWith('https://')) url = `https://${url}`;
-                window.open(url, '_blank', 'noopener,noreferrer');
-              }}
+            <a
+              href={supportLinks?.managerLink && supportLinks.managerLink !== '#' ? (supportLinks.managerLink.startsWith('http') ? supportLinks.managerLink : `https://${supportLinks.managerLink}`) : '#'}
+              target="_blank"
+              rel="noopener noreferrer"
               className="btn-primary w-full py-3 text-base flex items-center justify-center gap-2"
             >
               <MessageCircle size={20} />
               Send Screenshot to Manager
-            </button>
+            </a>
 
             <button
               onClick={() => { setShowSuccessModal(false); setActiveTab('history'); }}

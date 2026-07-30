@@ -28,9 +28,10 @@ export default function SupportPage() {
       </div>
 
       <div className="card-gold space-y-4">
-        <button
-          type="button"
-          onClick={() => openExternalLink(support?.managerLink)}
+        <a
+          href={support?.managerLink && support.managerLink !== '#' ? (support.managerLink.startsWith('http') ? support.managerLink : `https://${support.managerLink}`) : '#'}
+          target="_blank"
+          rel="noopener noreferrer"
           className="w-full flex items-center justify-between p-4 bg-gray-900 border border-sky-600/30 rounded-xl hover:bg-sky-500/10 transition-colors group cursor-pointer"
         >
           <div className="flex items-center gap-3">
@@ -43,11 +44,12 @@ export default function SupportPage() {
             </div>
           </div>
           <ExternalLink size={20} className="text-gray-500 group-hover:text-sky-400 transition-colors" />
-        </button>
+        </a>
 
-        <button
-          type="button"
-          onClick={() => openExternalLink(support?.groupLink)}
+        <a
+          href={support?.groupLink && support.groupLink !== '#' ? (support.groupLink.startsWith('http') ? support.groupLink : `https://${support.groupLink}`) : '#'}
+          target="_blank"
+          rel="noopener noreferrer"
           className="w-full flex items-center justify-between p-4 bg-gray-900 border border-gray-700 rounded-xl hover:bg-gray-800 transition-colors group cursor-pointer"
         >
           <div className="flex items-center gap-3">
@@ -60,7 +62,7 @@ export default function SupportPage() {
             </div>
           </div>
           <ExternalLink size={20} className="text-gray-500 group-hover:text-gray-300 transition-colors" />
-        </button>
+        </a>
       </div>
     </div>
   );

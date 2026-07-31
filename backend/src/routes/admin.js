@@ -129,7 +129,27 @@ router.post('/deposits/:id/approve', async (req, res) => {
       if (!dep) throw new Error('Deposit not found or not pending');
 
       await txDb.prepare("UPDATE deposits SET status = 'approved', admin_note = ? WHERE id = ?").run(req.body.note || null, req.params.id);
-      await txDb.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").run(dep.amount, dep.user_id);
+      
+      let amountToAdd = Number(dep.amount);
+
+      const approvedCountResult = await txDb.prepare("SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND status = 'approved'").get(dep.user_id);
+      if (approvedCountResult.count === 1) {
+        const settings = await txDb.prepare("SELECT key, value FROM settings WHERE key LIKE 'new_member_bonus_%'").all();
+        const sMap = settings.reduce((acc, row) => ({ ...acc, [row.key]: row.value }), {});
+        
+        if (sMap['new_member_bonus_enabled'] === 'true') {
+          const minP = Number(sMap['new_member_bonus_min_percent']) || 3;
+          const maxP = Number(sMap['new_member_bonus_max_percent']) || 5;
+          const pct = Math.random() * (maxP - minP) + minP;
+          const bonusAmount = amountToAdd * (pct / 100);
+          
+          const bonusId = uuidv4();
+          await txDb.prepare(`INSERT INTO new_member_bonuses (id, user_id, bonus_percent, bonus_amount) VALUES (?, ?, ?, ?)`).run(bonusId, dep.user_id, pct.toFixed(2), bonusAmount);
+          amountToAdd += bonusAmount;
+        }
+      }
+
+      await txDb.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").run(amountToAdd, dep.user_id);
     });
     res.json({ message: 'Approved' });
   } catch (err) {

@@ -40,17 +40,13 @@ router.get('/support', protect, async (req, res) => {
 // Serve deposit bank accounts from settings (user-facing)
 router.get('/deposit-banks', protect, async (req, res) => {
   try {
-    const cbeAccount = await db.prepare("SELECT value FROM settings WHERE key = 'bank_cbe_account'").get()?.value || '1000540699236';
-    const cbeName = await db.prepare("SELECT value FROM settings WHERE key = 'bank_cbe_name'").get()?.value || 'Commercial Bank of Ethiopia (CBE)';
-    const awashAccount = await db.prepare("SELECT value FROM settings WHERE key = 'bank_awash_account'").get()?.value || '013351516497900';
-    const awashName = await db.prepare("SELECT value FROM settings WHERE key = 'bank_awash_name'").get()?.value || 'Awash Bank';
-    const boaAccount = await db.prepare("SELECT value FROM settings WHERE key = 'bank_boa_account'").get()?.value || '189018436';
-    const boaName = await db.prepare("SELECT value FROM settings WHERE key = 'bank_boa_name'").get()?.value || 'Bank of Abyssinia (BOA)';
+    const rows = await db.prepare('SELECT * FROM settings').all();
+    const s = rows.reduce((acc, row) => ({ ...acc, [row.key]: row.value }), {});
 
     res.json({
-      CBE: { name: cbeName, account: cbeAccount },
-      AWASH: { name: awashName, account: awashAccount },
-      BOA: { name: boaName, account: boaAccount },
+      CBE: { name: s['bank_cbe_name'] || 'Commercial Bank of Ethiopia (CBE)', account: s['bank_cbe_account'] || '1000540699236' },
+      AWASH: { name: s['bank_awash_name'] || 'Awash Bank', account: s['bank_awash_account'] || '013351516497900' },
+      BOA: { name: s['bank_boa_name'] || 'Bank of Abyssinia (BOA)', account: s['bank_boa_account'] || '189018436' },
     });
   } catch (err) {
     console.error(err);

@@ -42,11 +42,14 @@ router.put('/account', protect, async (req, res) => {
 // Public: withdrawal settings for the frontend
 router.get('/settings', async (req, res) => {
   try {
-    const minWithdrawalStr = await db.prepare("SELECT value FROM settings WHERE key = 'min_withdrawal'").get()?.value || '200';
-    const startTime = await db.prepare("SELECT value FROM settings WHERE key = 'withdrawal_start_time'").get()?.value || '02:00';
-    const endTime = await db.prepare("SELECT value FROM settings WHERE key = 'withdrawal_end_time'").get()?.value || '12:00';
-    const allowedDaysStr = await db.prepare("SELECT value FROM settings WHERE key = 'withdrawal_allowed_days'").get()?.value || '1,2,3,4,5,6';
-    const quickAmountsStr = await db.prepare("SELECT value FROM settings WHERE key = 'withdrawal_quick_amounts'").get()?.value || '500,1500,6000,15000,45000,100000';
+    const rows = await db.prepare('SELECT * FROM settings').all();
+    const s = rows.reduce((acc, row) => ({ ...acc, [row.key]: row.value }), {});
+
+    const minWithdrawalStr = s['min_withdrawal'] || '200';
+    const startTime = s['withdrawal_start_time'] || '02:00';
+    const endTime = s['withdrawal_end_time'] || '12:00';
+    const allowedDaysStr = s['withdrawal_allowed_days'] || '1,2,3,4,5,6';
+    const quickAmountsStr = s['withdrawal_quick_amounts'] || '500,1500,6000,15000,45000,100000';
 
     res.json({
       minWithdrawal: parseInt(minWithdrawalStr),

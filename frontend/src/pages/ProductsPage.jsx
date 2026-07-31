@@ -54,16 +54,16 @@ export default function ProductsPage() {
           const isLocked = !p.is_active;
 
           return (
-            <div key={p.id} className={`card relative overflow-hidden group ${isLocked ? 'opacity-70 grayscale' : ''}`}>
-              <div className="absolute top-0 right-0 p-3 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
-                {isLocked ? <Lock size={100} className="text-gray-500" /> : <ShieldCheck size={100} className="text-sky-500" />}
+            <div key={p.id} className={`card relative overflow-hidden group ${isLocked ? 'opacity-90' : ''}`}>
+              <div className="absolute top-0 right-0 p-3 opacity-15 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
+                {isLocked ? <Lock size={100} className="text-red-500" /> : <ShieldCheck size={100} className="text-indigo-500" />}
               </div>
               
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className={`text-xl font-serif ${isLocked ? 'text-gray-400' : 'text-sky-400'}`}>{p.name}</h3>
-                    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded border mt-1 ${isLocked ? 'bg-gray-800 text-gray-500 border-gray-700' : 'bg-sky-500/10 text-sky-300 border-sky-500/20'}`}>
+                    <h3 className={`text-xl font-serif ${isLocked ? 'text-red-400' : 'text-indigo-400'}`}>{p.name}</h3>
+                    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded border mt-1 ${isLocked ? 'bg-red-500/10 text-red-300 border-red-500/20' : 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20'}`}>
                       Level {p.level}
                     </span>
                   </div>
@@ -75,33 +75,33 @@ export default function ProductsPage() {
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="bg-gray-950 rounded-lg p-2.5 border border-gray-800">
-                    <p className="text-[10px] text-gray-500 uppercase flex items-center gap-1"><Zap size={12}/> Daily Return</p>
-                    <p className={`${isLocked ? 'text-gray-500' : 'text-green-400'} font-mono font-semibold mt-0.5`}>+{parseFloat(p.daily_return).toLocaleString()} ETB</p>
+                    <p className="text-[10px] text-gray-500 uppercase flex items-center gap-1"><Zap size={12} className="text-yellow-400"/> Daily Return</p>
+                    <p className="text-green-400 font-mono font-semibold mt-0.5">+{parseFloat(p.daily_return).toLocaleString()} ETB</p>
                   </div>
                   <div className="bg-gray-950 rounded-lg p-2.5 border border-gray-800">
-                    <p className="text-[10px] text-gray-500 uppercase flex items-center gap-1"><Clock size={12}/> Duration</p>
-                    <p className={`${isLocked ? 'text-gray-500' : 'text-gray-300'} font-mono font-semibold mt-0.5`}>{p.duration_days} Days</p>
+                    <p className="text-[10px] text-gray-500 uppercase flex items-center gap-1"><Clock size={12} className="text-sky-400"/> Duration</p>
+                    <p className="text-gray-200 font-mono font-semibold mt-0.5">{p.duration_days} Days</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-5">
                   <div className="bg-gray-950 rounded-lg p-2.5 border border-gray-800 flex justify-between items-center">
                     <p className="text-[10px] text-gray-500 uppercase">Monthly Expected</p>
-                    <p className={`${isLocked ? 'text-gray-500' : 'text-sky-400'} font-mono font-bold`}>
+                    <p className="text-indigo-400 font-mono font-bold">
                       {parseFloat(p.daily_return * p.duration_days).toLocaleString()} ETB
                     </p>
                   </div>
                   <div className="bg-gray-950 rounded-lg p-2.5 border border-gray-800 flex justify-between items-center">
                     <p className="text-[10px] text-gray-500 uppercase">Yearly Expected</p>
-                    <p className={`${isLocked ? 'text-gray-500' : 'text-green-400'} font-mono font-bold`}>
+                    <p className="text-green-400 font-mono font-bold">
                       {parseFloat(p.daily_return * p.duration_days * 12).toLocaleString()} ETB
                     </p>
                   </div>
                 </div>
 
                 {isLocked ? (
-                  <button disabled className="btn-secondary w-full justify-center gap-2 cursor-not-allowed opacity-50 bg-gray-800 text-gray-400 border-gray-700">
-                    <Lock size={18} /> Locked
+                  <button disabled className="w-full inline-flex items-center justify-center gap-2 font-semibold rounded-lg py-2.5 cursor-not-allowed opacity-80 bg-red-900/50 text-red-300 border border-red-800">
+                    <Lock size={18} /> Locked by Admin
                   </button>
                 ) : (
                   <button 

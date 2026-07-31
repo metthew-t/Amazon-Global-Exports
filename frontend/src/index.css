@@ -37,11 +37,11 @@
            transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
   }
   .btn-primary {
-    @apply btn bg-sky-500 text-gray-950 hover:bg-sky-400 active:scale-95 px-4 py-2.5
-           shadow-md shadow-sky-900/30 hover:shadow-sky-700/40;
+    @apply btn bg-gradient-to-r from-sky-400 to-indigo-500 text-white hover:from-sky-300 hover:to-indigo-400 active:scale-95 px-4 py-2.5
+           shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 border-none;
   }
   .btn-outline {
-    @apply btn border border-sky-600/40 text-sky-400 hover:bg-sky-500/10 px-4 py-2.5;
+    @apply btn border-2 border-indigo-500/50 text-indigo-400 hover:bg-indigo-500/10 px-4 py-2.5;
   }
   .btn-danger {
     @apply btn bg-red-600 text-white hover:bg-red-500 px-4 py-2.5;

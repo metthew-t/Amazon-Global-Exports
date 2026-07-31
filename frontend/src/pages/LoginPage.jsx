@@ -38,33 +38,33 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-page p-4">
-      <div className="u-card w-full max-w-md animate-fade-in relative overflow-hidden border-surface-border">
+    <div className="min-h-screen flex items-center justify-center bg-gray-950 p-4">
+      <div className="card-gold w-full max-w-md animate-fade-in relative overflow-hidden">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-ink">Member Login</h1>
-          <p className="text-sm text-ink-muted mt-1">Access your Amazon Global Exports account</p>
+          <h1 className="text-2xl font-serif text-sky-400">Member Login</h1>
+          <p className="text-sm text-gray-400 mt-1">Access your Amazon Global Exports account</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="u-label">Phone Number</label>
-            <input type="tel" {...register('phone')} className="u-input" placeholder="0900000000" />
-            {errors.phone && <p className="u-form-error">{errors.phone.message}</p>}
+            <label className="label">Phone Number</label>
+            <input type="tel" {...register('phone')} className="input" placeholder="0900000000" />
+            {errors.phone && <p className="form-error">{errors.phone.message}</p>}
           </div>
 
           <div>
-            <label className="u-label">Password</label>
-            <input type="password" {...register('password')} className="u-input" placeholder="••••••••" />
-            {errors.password && <p className="u-form-error">{errors.password.message}</p>}
+            <label className="label">Password</label>
+            <input type="password" {...register('password')} className="input" placeholder="••••••••" />
+            {errors.password && <p className="form-error">{errors.password.message}</p>}
           </div>
 
-          <button type="submit" disabled={loading} className="u-btn-primary w-full mt-6 py-3 text-lg">
+          <button type="submit" disabled={loading} className="btn-primary w-full mt-6 py-3 text-lg">
             {loading ? 'Logging in...' : <><LogIn size={20}/> Login</>}
           </button>
         </form>
 
-        <p className="text-center text-sm text-ink-muted mt-6">
-          Don't have an account? <Link to="/register" className="text-brand-600 font-semibold hover:underline">Register</Link>
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Don't have an account? <Link to="/register" className="text-sky-400 font-semibold hover:underline">Register</Link>
         </p>
       </div>
     </div>

@@ -24,26 +24,27 @@ export default function VaultPage() {
     }
   });
 
-  if (isLoading) return <div className="text-center py-10 text-ink-muted">Loading your vault...</div>;
+  if (isLoading) return <div className="text-center py-10 text-gray-500">Loading your vault...</div>;
 
   const activePurchases = purchases?.filter(p => p.status === 'active') || [];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="u-page-header flex items-center gap-2"><Vault size={24} /> My Vault</h1>
-        <p className="u-page-sub">Claim your daily returns from active investments</p>
+        <h1 className="page-header flex items-center gap-2"><Vault size={24} /> My Vault</h1>
+        <p className="page-sub">Claim your daily returns from active investments</p>
       </div>
 
       {activePurchases.length === 0 ? (
-        <div className="u-card text-center py-10 border-dashed border-surface-border">
-          <Vault size={48} className="mx-auto text-ink-faint mb-4" />
-          <p className="text-ink-muted mb-4">No active products found.</p>
-          <a href="/products" className="u-btn-outline text-sm">Browse VIP Products</a>
+        <div className="card text-center py-10 border-dashed border-gray-700">
+          <Vault size={48} className="mx-auto text-gray-600 mb-4" />
+          <p className="text-gray-400 mb-4">No active products found.</p>
+          <a href="/products" className="btn-outline text-sm">Browse VIP Products</a>
         </div>
       ) : (
         <div className="space-y-4">
           {activePurchases.map(p => {
+            // Calculate if ready to claim
             let readyToClaim = true;
             let remainingText = '';
             
@@ -58,35 +59,35 @@ export default function VaultPage() {
             }
 
             return (
-              <div key={p.id} className="u-card">
+              <div key={p.id} className="card bg-gray-900 border border-gray-800">
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="text-lg font-bold text-ink">{p.name}</h3>
-                    <p className="text-xs text-ink-muted">Level {p.level}</p>
+                    <h3 className="text-lg font-bold text-white">{p.name}</h3>
+                    <p className="text-xs text-gray-400">Level {p.level}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-mono text-brand-600">+{p.daily_return} ETB / day</p>
+                    <p className="text-sm font-mono text-sky-400">+{p.daily_return} ETB / day</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
-                  <div className="bg-surface-page rounded-xl p-2.5 border border-surface-border">
-                    <span className="text-ink-faint block mb-0.5">Purchased</span>
-                    <span className="text-ink font-mono">{new Date(p.created_at).toLocaleDateString()}</span>
+                  <div className="bg-gray-950 rounded p-2 border border-gray-800">
+                    <span className="text-gray-500 block mb-0.5">Purchased</span>
+                    <span className="text-gray-300 font-mono">{new Date(p.created_at).toLocaleDateString()}</span>
                   </div>
-                  <div className="bg-surface-page rounded-xl p-2.5 border border-surface-border">
-                    <span className="text-ink-faint block mb-0.5">Total Earned</span>
-                    <span className="text-brand-600 font-mono font-semibold">{parseFloat(p.total_earned).toLocaleString()} ETB</span>
+                  <div className="bg-gray-950 rounded p-2 border border-gray-800">
+                    <span className="text-gray-500 block mb-0.5">Total Earned</span>
+                    <span className="text-green-400 font-mono font-semibold">{parseFloat(p.total_earned).toLocaleString()} ETB</span>
                   </div>
                 </div>
 
                 <button 
                   onClick={() => claimMutation.mutate(p.id)}
                   disabled={!readyToClaim || claimMutation.isPending}
-                  className={`w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all ${
+                  className={`w-full py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all ${
                     readyToClaim 
-                      ? 'bg-brand-600 text-white hover:bg-brand-700 shadow-lg shadow-brand-900/20 active:scale-95' 
-                      : 'bg-gray-100 text-ink-faint cursor-not-allowed border border-surface-border'
+                      ? 'bg-sky-500 text-gray-950 hover:bg-sky-400 shadow-lg shadow-sky-900/30' 
+                      : 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700'
                   }`}
                 >
                   {claimMutation.isPending ? (

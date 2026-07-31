@@ -39,43 +39,43 @@ export default function AccountPage() {
     }
   });
 
-  if (isLoading) return <div className="text-center py-10 text-ink-muted">Loading...</div>;
+  if (isLoading) return <div className="text-center py-10 text-gray-500">Loading...</div>;
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="u-page-header flex items-center gap-2"><User size={24} /> Account Settings</h1>
-        <p className="u-page-sub">Manage your profile and withdrawal information</p>
+        <h1 className="page-header flex items-center gap-2"><User size={24} /> Account Settings</h1>
+        <p className="page-sub">Manage your profile and withdrawal information</p>
       </div>
 
-      <div className="u-card">
-        <h2 className="u-section-title">Profile Information</h2>
+      <div className="card">
+        <h2 className="section-title">Profile Information</h2>
         <div className="space-y-3 mt-4">
-          <div className="flex justify-between items-center py-2 border-b border-surface-border">
-            <span className="text-ink-muted text-sm">Name</span>
-            <span className="text-ink font-medium">{user?.full_name}</span>
+          <div className="flex justify-between items-center py-2 border-b border-gray-800">
+            <span className="text-gray-500 text-sm">Name</span>
+            <span className="text-white font-medium">{user?.full_name}</span>
           </div>
-          <div className="flex justify-between items-center py-2 border-b border-surface-border">
-            <span className="text-ink-muted text-sm">Phone</span>
-            <span className="text-ink font-medium">{user?.phone}</span>
+          <div className="flex justify-between items-center py-2 border-b border-gray-800">
+            <span className="text-gray-500 text-sm">Phone</span>
+            <span className="text-white font-medium">{user?.phone}</span>
           </div>
-          <div className="flex justify-between items-center py-2 border-b border-surface-border">
-            <span className="text-ink-muted text-sm">Member Since</span>
-            <span className="text-ink font-medium">{new Date(user?.created_at).toLocaleDateString()}</span>
+          <div className="flex justify-between items-center py-2 border-b border-gray-800">
+            <span className="text-gray-500 text-sm">Member Since</span>
+            <span className="text-white font-medium">{new Date(user?.created_at).toLocaleDateString()}</span>
           </div>
         </div>
       </div>
 
-      <div className="u-card-brand">
+      <div className="card-gold">
         <div className="flex items-center gap-2 mb-4">
-          <Landmark size={20} className="text-brand-600" />
-          <h2 className="text-lg font-bold text-ink">Withdrawal Account</h2>
+          <Landmark size={20} className="text-sky-400" />
+          <h2 className="text-lg font-serif text-white">Withdrawal Account</h2>
         </div>
         
         {!accountInfo && (
-          <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl flex gap-3 mb-5">
-            <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-700 leading-relaxed">
+          <div className="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded-lg flex gap-3 mb-5">
+            <AlertTriangle size={18} className="text-yellow-500 shrink-0 mt-0.5" />
+            <p className="text-xs text-yellow-200 leading-relaxed">
               You haven't set up a withdrawal account yet. Please add your bank details to enable withdrawals. Make sure the account name matches your registered name.
             </p>
           </div>
@@ -83,27 +83,27 @@ export default function AccountPage() {
 
         <form onSubmit={handleSubmit((d) => saveMutation.mutate(d))} className="space-y-4">
           <div>
-            <label className="u-label">Bank Name</label>
-            <select {...register('bankType')} className="u-input appearance-none bg-surface-input">
+            <label className="label">Bank Name</label>
+            <select {...register('bankType')} className="input appearance-none">
               <option value="CBE">Commercial Bank of Ethiopia (CBE)</option>
               <option value="AWASH">Awash Bank</option>
             </select>
-            {errors.bankType && <p className="u-form-error">{errors.bankType.message}</p>}
+            {errors.bankType && <p className="form-error">{errors.bankType.message}</p>}
           </div>
 
           <div>
-            <label className="u-label">Account Number</label>
-            <input type="text" {...register('accountNumber')} className="u-input font-mono" placeholder="e.g. 1000..." />
-            {errors.accountNumber && <p className="u-form-error">{errors.accountNumber.message}</p>}
+            <label className="label">Account Number</label>
+            <input type="text" {...register('accountNumber')} className="input font-mono" placeholder="e.g. 1000..." />
+            {errors.accountNumber && <p className="form-error">{errors.accountNumber.message}</p>}
           </div>
 
           <div>
-            <label className="u-label">Account Holder Name</label>
-            <input type="text" {...register('accountName')} className="u-input" placeholder="Full name on account" />
-            {errors.accountName && <p className="u-form-error">{errors.accountName.message}</p>}
+            <label className="label">Account Holder Name</label>
+            <input type="text" {...register('accountName')} className="input" placeholder="Full name on account" />
+            {errors.accountName && <p className="form-error">{errors.accountName.message}</p>}
           </div>
 
-          <button type="submit" disabled={saveMutation.isPending} className="u-btn-primary w-full mt-2 py-3 text-base">
+          <button type="submit" disabled={saveMutation.isPending} className="btn-primary w-full mt-2">
             {saveMutation.isPending ? 'Saving...' : <><Save size={18}/> Save Bank Details</>}
           </button>
         </form>

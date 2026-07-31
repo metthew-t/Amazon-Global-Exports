@@ -23,16 +23,16 @@ const navItems = [
 export default function UserLayout() {
   const { user, logout } = useAuth();
   return (
-    <div className="u-page max-w-md mx-auto relative flex flex-col">
+    <div className="min-h-dvh flex flex-col bg-gray-950 max-w-md mx-auto relative">
       {/* Top Header */}
-      <header className="u-header">
+      <header className="sticky top-0 z-40 bg-gray-950/95 backdrop-blur border-b border-gray-800 px-4 py-3 flex items-center justify-between">
         <div>
-          <p className="text-[10px] text-ink-faint uppercase tracking-widest font-semibold">Amazon Global Exports</p>
-          <p className="font-semibold text-brand-600 text-sm">{user?.full_name}</p>
+          <p className="text-xs text-gray-500 uppercase tracking-widest">Amazon Global Exports</p>
+          <p className="font-semibold text-sky-400 text-sm">{user?.full_name}</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] text-ink-muted bg-brand-50 border border-brand-200 px-2 py-1 rounded-lg">{user?.referral_code}</span>
-          <button onClick={logout} className="u-btn-ghost text-ink-faint p-2 rounded-lg hover:text-red-500"><LogOut size={16} /></button>
+          <span className="font-mono text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">{user?.referral_code}</span>
+          <button onClick={logout} className="btn-ghost text-gray-500 p-2 rounded-lg hover:text-red-400"><LogOut size={16} /></button>
         </div>
       </header>
 
@@ -42,16 +42,16 @@ export default function UserLayout() {
       </main>
 
       {/* Bottom Nav */}
-      <nav className="u-nav">
+      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-gray-950/95 backdrop-blur border-t border-gray-800 z-50">
         <div className="flex items-center justify-around overflow-x-auto px-1 py-1 gap-0 scrollbar-none">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink key={to} to={to} className={({ isActive }) =>
-              `u-nav-item min-w-[52px] ${isActive ? 'u-nav-item-active' : ''}`
+              `nav-item min-w-[52px] ${isActive ? 'nav-item-active' : ''}`
             }>
               {({ isActive }) => (
                 <>
-                  <Icon size={18} className={isActive ? 'text-brand-600' : ''} />
-                  <span className={`text-[9px] font-semibold tracking-tight ${isActive ? 'text-brand-600' : ''}`}>{label}</span>
+                  <Icon size={18} className={isActive ? 'text-sky-400' : ''} />
+                  <span className={`text-[9px] font-semibold tracking-tight ${isActive ? 'text-sky-400' : ''}`}>{label}</span>
                 </>
               )}
             </NavLink>

@@ -39,55 +39,55 @@ export default function TeamRewardPage() {
     { id: 'C', name: 'Level C', minTeam: levelsData.C.min, amount: levelsData.C.amount, desc: `Invite ${levelsData.C.min} active members` },
   ] : [];
 
-  if (isLoadingLevels) return <div className="text-gray-500 text-center py-10 animate-pulse">Loading rewards...</div>;
+  if (isLoadingLevels) return <div className="text-ink-muted text-center py-10 animate-pulse">Loading rewards...</div>;
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="page-header flex items-center gap-2"><Gift size={24} /> Team Rewards</h1>
-        <p className="page-sub">Build your team and claim level bonuses</p>
+        <h1 className="u-page-header flex items-center gap-2"><Gift size={24} /> Team Rewards</h1>
+        <p className="u-page-sub">Build your team and claim level bonuses</p>
       </div>
 
-      <div className="card-gold text-center py-6">
-        <Users size={32} className="mx-auto text-sky-400 mb-2" />
-        <p className="text-sm text-gray-400 uppercase tracking-widest mb-1">Your Team Size</p>
-        <p className="text-3xl font-bold text-white font-mono">{teamSize !== undefined ? teamSize : '...'}</p>
+      <div className="u-card-brand text-center py-6">
+        <Users size={32} className="mx-auto text-brand-600 mb-2" />
+        <p className="text-xs text-ink-muted uppercase tracking-widest mb-1 font-semibold">Your Team Size</p>
+        <p className="text-3xl font-bold text-ink font-mono">{teamSize !== undefined ? teamSize : '...'}</p>
       </div>
 
       <div className="space-y-4">
-        <h2 className="section-title">Reward Tiers</h2>
+        <h2 className="u-section-title">Reward Tiers</h2>
         {levels.map((lvl) => {
           const isEligible = teamSize >= lvl.minTeam;
           const claimed = myRewards?.find(r => r.level === lvl.id && r.status !== 'rejected');
           
           return (
-            <div key={lvl.id} className="card relative overflow-hidden border border-gray-800 p-0">
-              <div className="p-4 border-b border-gray-800 bg-gray-900 flex justify-between items-center">
+            <div key={lvl.id} className="u-card relative overflow-hidden p-0 border-surface-border">
+              <div className="p-4 border-b border-surface-border bg-white flex justify-between items-center">
                 <div>
-                  <h3 className="text-lg font-bold text-sky-400">{lvl.name}</h3>
-                  <p className="text-xs text-gray-500 mt-1">{lvl.desc}</p>
+                  <h3 className="text-lg font-bold text-brand-700">{lvl.name}</h3>
+                  <p className="text-xs text-ink-muted mt-1">{lvl.desc}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-white font-mono">+{lvl.amount}</p>
-                  <p className="text-[10px] text-gray-500">ETB Bonus</p>
+                  <p className="text-lg font-bold text-ink font-mono">+{lvl.amount}</p>
+                  <p className="text-[10px] text-ink-faint">ETB Bonus</p>
                 </div>
               </div>
               
-              <div className="p-3 bg-gray-950 flex items-center justify-between">
+              <div className="p-3 bg-surface-input flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="w-full bg-gray-800 rounded-full h-1.5 mb-1">
+                  <div className="w-full bg-surface-border rounded-full h-2 mb-1 overflow-hidden shadow-inner">
                     <div 
-                      className={`h-1.5 rounded-full ${isEligible ? 'bg-green-500' : 'bg-sky-500'}`} 
+                      className={`h-full rounded-full transition-all duration-500 ${isEligible ? 'bg-brand-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-brand-300'}`} 
                       style={{ width: `${Math.min(100, ((teamSize || 0) / lvl.minTeam) * 100)}%` }}
                     ></div>
                   </div>
-                  <p className="text-[10px] text-gray-500 font-mono text-right">{teamSize || 0} / {lvl.minTeam}</p>
+                  <p className="text-[10px] text-ink-muted font-mono text-right">{teamSize || 0} / {lvl.minTeam}</p>
                 </div>
 
                 <div className="ml-4 shrink-0">
                   {claimed ? (
-                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded border ${
-                      claimed.status === 'approved' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg border font-semibold ${
+                      claimed.status === 'approved' ? 'bg-brand-50 text-brand-600 border-brand-200' : 'bg-amber-50 text-amber-600 border-amber-200'
                     }`}>
                       {claimed.status === 'approved' ? <CheckCircle size={14}/> : <Clock size={14}/>}
                       {claimed.status.toUpperCase()}
@@ -96,7 +96,7 @@ export default function TeamRewardPage() {
                     <button 
                       onClick={() => requestMutation.mutate(lvl.id)}
                       disabled={!isEligible || requestMutation.isPending}
-                      className={`btn text-xs px-3 py-1.5 ${isEligible ? 'btn-primary' : 'bg-gray-800 text-gray-500'}`}
+                      className={`u-btn text-xs px-3 py-1.5 ${isEligible ? 'u-btn-primary' : 'bg-gray-100 text-ink-faint border border-surface-border shadow-none'}`}
                     >
                       {requestMutation.isPending ? '...' : isEligible ? 'Claim Now' : 'Locked'}
                     </button>

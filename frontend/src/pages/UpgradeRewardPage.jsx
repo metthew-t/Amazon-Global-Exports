@@ -41,46 +41,46 @@ export default function UpgradeRewardPage() {
   // Define bonus mapping - ignore index 0 since levels are 1-15
   const bonusAmounts = levelsData ? levelsData.slice(1) : [];
 
-  if (pLoading || hLoading || isLoadingLevels) return <div className="text-gray-500 text-center py-10 animate-pulse">Loading rewards...</div>;
+  if (pLoading || hLoading || isLoadingLevels) return <div className="text-ink-muted text-center py-10 animate-pulse">Loading rewards...</div>;
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="page-header flex items-center gap-2"><TrendingUp size={24} /> Upgrade Rewards</h1>
-        <p className="page-sub">Claim bonuses for upgrading your VIP level</p>
+        <h1 className="u-page-header flex items-center gap-2"><TrendingUp size={24} /> Upgrade Rewards</h1>
+        <p className="u-page-sub">Claim bonuses for upgrading your VIP level</p>
       </div>
 
-      <div className="card-gold bg-sky-900/10 border-sky-500/20 text-center py-6">
-        <Package size={32} className="mx-auto text-sky-400 mb-2" />
-        <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">Your Highest VIP Level</p>
-        <p className="text-3xl font-bold text-white font-mono">Level {maxVipOwned}</p>
+      <div className="u-card-brand bg-brand-50 border-brand-200 text-center py-6 shadow-inner">
+        <Package size={32} className="mx-auto text-brand-600 mb-2" />
+        <p className="text-xs text-ink-muted uppercase tracking-widest mb-1 font-semibold">Your Highest VIP Level</p>
+        <p className="text-3xl font-bold text-ink font-mono">Level {maxVipOwned}</p>
       </div>
 
       <div className="space-y-3">
-        <h2 className="section-title">Available Rewards</h2>
+        <h2 className="u-section-title">Available Rewards</h2>
         {bonusAmounts.map((amount, idx) => {
           const level = idx + 1;
           const isEligible = maxVipOwned >= level;
           const requested = history?.find(h => h.vip_level === level && h.status !== 'rejected');
 
           return (
-            <div key={level} className="card p-3 flex justify-between items-center border border-gray-800">
+            <div key={level} className="u-card p-3 flex justify-between items-center border border-surface-border">
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold border ${
-                  isEligible ? 'bg-sky-500/10 border-sky-500/30 text-sky-400' : 'bg-gray-900 border-gray-700 text-gray-600'
+                  isEligible ? 'bg-brand-50 border-brand-200 text-brand-600' : 'bg-surface-page border-surface-border text-ink-faint'
                 }`}>
                   L{level}
                 </div>
                 <div>
-                  <p className={`font-semibold ${isEligible ? 'text-gray-200' : 'text-gray-600'}`}>VIP {level} Bonus</p>
-                  <p className={`text-xs font-mono ${isEligible ? 'text-green-400' : 'text-gray-600'}`}>+{amount.toLocaleString()} ETB</p>
+                  <p className={`font-bold ${isEligible ? 'text-ink' : 'text-ink-muted'}`}>VIP {level} Bonus</p>
+                  <p className={`text-xs font-mono ${isEligible ? 'text-brand-600' : 'text-ink-faint'}`}>+{amount.toLocaleString()} ETB</p>
                 </div>
               </div>
 
               <div>
                 {requested ? (
-                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded border ${
-                    requested.status === 'approved' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg border font-semibold ${
+                    requested.status === 'approved' ? 'bg-brand-50 text-brand-600 border-brand-200' : 'bg-amber-50 text-amber-600 border-amber-200'
                   }`}>
                     {requested.status === 'approved' ? <CheckCircle size={14}/> : <Clock size={14}/>}
                     {requested.status.toUpperCase()}
@@ -89,7 +89,7 @@ export default function UpgradeRewardPage() {
                   <button 
                     onClick={() => requestMutation.mutate(level)}
                     disabled={!isEligible || requestMutation.isPending}
-                    className={`btn text-xs px-3 py-1.5 ${isEligible ? 'btn-primary' : 'bg-gray-800 text-gray-500'}`}
+                    className={`u-btn text-xs px-3 py-1.5 ${isEligible ? 'u-btn-primary' : 'bg-gray-100 text-ink-faint shadow-none border border-surface-border'}`}
                   >
                     {requestMutation.isPending ? '...' : isEligible ? 'Claim' : 'Locked'}
                   </button>

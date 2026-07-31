@@ -29,14 +29,14 @@ export default function LuckyWheelPage() {
     }
   });
 
-  if (isLoading) return <div className="text-center py-10 text-gray-500">Loading wheel...</div>;
+  if (isLoading) return <div className="text-center py-10 text-ink-muted">Loading wheel...</div>;
 
   if (wheelData?.disabled) {
     return (
       <div className="text-center py-20">
-        <Star size={48} className="mx-auto text-gray-700 mb-4" />
-        <h2 className="text-xl text-gray-500 font-serif">Lucky Wheel is currently closed</h2>
-        <p className="text-sm text-gray-600 mt-2">Check back later for the next round!</p>
+        <Star size={48} className="mx-auto text-ink-faint mb-4" />
+        <h2 className="text-xl text-ink-muted font-serif">Lucky Wheel is currently closed</h2>
+        <p className="text-sm text-ink-faint mt-2">Check back later for the next round!</p>
       </div>
     );
   }
@@ -50,54 +50,54 @@ export default function LuckyWheelPage() {
   return (
     <div className="space-y-6 pb-6">
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-sky-500/20 border border-sky-500/30 mb-4 animate-pulse-sky relative">
-          <Star size={32} className="text-sky-400" />
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-50 border border-brand-200 mb-4 animate-pulse-brand relative">
+          <Star size={32} className="text-brand-600" />
         </div>
-        <h1 className="text-2xl font-serif text-sky-400 mb-1">Lucky Wheel</h1>
-        <p className="text-sm text-gray-400">Buy a ticket for a chance to win the pot!</p>
+        <h1 className="text-2xl font-serif text-brand-700 mb-1">Lucky Wheel</h1>
+        <p className="text-sm text-ink-muted">Buy a ticket for a chance to win the pot!</p>
       </div>
 
-      <div className="card-gold relative overflow-hidden bg-gradient-to-b from-gray-900 to-gray-950 border-sky-500/30">
-        <div className="absolute top-0 right-0 p-4 opacity-5">
+      <div className="u-card-brand relative overflow-hidden bg-gradient-to-b from-brand-50 to-white">
+        <div className="absolute top-0 right-0 p-4 opacity-5 text-brand-900">
           <Star size={120} />
         </div>
         
         <div className="relative z-10 text-center mb-6">
-          <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">Current Pot Amount</p>
-          <p className="text-4xl font-bold text-white font-mono tracking-tight">
-            {r?.pot_amount ? parseFloat(r.pot_amount).toLocaleString() : '0'} <span className="text-lg text-sky-500">ETB</span>
+          <p className="text-xs uppercase tracking-widest text-ink-muted mb-2 font-semibold">Current Pot Amount</p>
+          <p className="text-4xl font-bold text-ink font-mono tracking-tight">
+            {r?.pot_amount ? parseFloat(r.pot_amount).toLocaleString() : '0'} <span className="text-lg text-brand-600">ETB</span>
           </p>
         </div>
 
         <div className="grid grid-cols-3 gap-2 mb-6 text-center">
-          <div className="bg-gray-950 rounded-lg p-2 border border-gray-800">
-            <p className="text-[10px] text-gray-500 uppercase">Ticket Price</p>
-            <p className="text-sm font-bold text-sky-400">{price} ETB</p>
+          <div className="bg-white rounded-xl p-2 border border-surface-border shadow-sm">
+            <p className="text-[10px] text-ink-faint uppercase">Ticket Price</p>
+            <p className="text-sm font-bold text-brand-600">{price} ETB</p>
           </div>
-          <div className="bg-gray-950 rounded-lg p-2 border border-gray-800">
-            <p className="text-[10px] text-gray-500 uppercase">Winners</p>
-            <p className="text-sm font-bold text-sky-400">{wheelData?.numWinners}</p>
+          <div className="bg-white rounded-xl p-2 border border-surface-border shadow-sm">
+            <p className="text-[10px] text-ink-faint uppercase">Winners</p>
+            <p className="text-sm font-bold text-brand-600">{wheelData?.numWinners}</p>
           </div>
-          <div className="bg-gray-950 rounded-lg p-2 border border-gray-800">
-            <p className="text-[10px] text-gray-500 uppercase">Your Tickets</p>
-            <p className="text-sm font-bold text-sky-400">{userTickets}</p>
+          <div className="bg-white rounded-xl p-2 border border-surface-border shadow-sm">
+            <p className="text-[10px] text-ink-faint uppercase">Your Tickets</p>
+            <p className="text-sm font-bold text-brand-600">{userTickets}</p>
           </div>
         </div>
 
         <div className="mb-6">
-          <div className="flex justify-between text-xs mb-1.5">
-            <span className="text-gray-400">Tickets Sold</span>
-            <span className="text-sky-400 font-mono">{sold} / {max}</span>
+          <div className="flex justify-between text-xs mb-1.5 font-medium">
+            <span className="text-ink-muted">Tickets Sold</span>
+            <span className="text-brand-600 font-mono">{sold} / {max}</span>
           </div>
-          <div className="w-full bg-gray-950 rounded-full h-3 border border-gray-800 overflow-hidden relative">
+          <div className="w-full bg-surface-border rounded-full h-3 overflow-hidden shadow-inner relative">
             <div 
-              className="h-full bg-gradient-to-r from-sky-600 to-sky-400 rounded-full transition-all duration-1000 relative"
+              className="h-full bg-brand-500 rounded-full transition-all duration-1000 relative"
               style={{ width: `${(sold / max) * 100}%` }}
             >
               <div className="absolute inset-0 bg-white/20 w-full animate-[slideRight_2s_infinite]"></div>
             </div>
           </div>
-          <p className="text-center text-[10px] text-gray-500 mt-2">Draw happens when {max} tickets are sold</p>
+          <p className="text-center text-[10px] text-ink-faint mt-2">Draw happens when {max} tickets are sold</p>
         </div>
 
         <button 
@@ -105,37 +105,37 @@ export default function LuckyWheelPage() {
             if (window.confirm(`Buy a ticket for ${price} ETB?`)) buyMutation.mutate();
           }}
           disabled={buyMutation.isPending || sold >= max}
-          className="btn-primary w-full py-4 text-lg font-bold"
+          className="u-btn-primary w-full py-4 text-lg font-bold"
         >
           {buyMutation.isPending ? 'Processing...' : sold >= max ? 'Round Full - Drawing...' : <><Ticket size={20}/> Buy Ticket</>}
         </button>
       </div>
 
       <div>
-        <h2 className="section-title">Your Ticket History</h2>
+        <h2 className="u-section-title">Your Ticket History</h2>
         <div className="space-y-3">
           {history?.length === 0 ? (
-            <p className="text-center text-sm text-gray-600 py-4">No tickets purchased yet</p>
+            <p className="text-center text-sm text-ink-muted py-4">No tickets purchased yet</p>
           ) : (
             history?.map((t) => (
-              <div key={t.id} className="card p-3 flex justify-between items-center border border-gray-800">
+              <div key={t.id} className="u-card p-3 flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    t.round_status === 'open' ? 'bg-blue-500/10 text-blue-400' :
-                    t.is_winner ? 'bg-sky-500/20 text-sky-400 border border-sky-500/30' : 'bg-gray-800 text-gray-500'
+                    t.round_status === 'open' ? 'bg-blue-50 text-blue-500 border border-blue-200' :
+                    t.is_winner ? 'bg-brand-50 text-brand-600 border border-brand-200' : 'bg-surface-page text-ink-faint border border-surface-border'
                   }`}>
                     {t.round_status === 'open' ? <Clock size={18}/> : t.is_winner ? <Trophy size={18}/> : <Ticket size={18}/>}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-gray-200">
+                    <p className="text-sm font-bold text-ink">
                       {t.round_status === 'open' ? 'Pending Draw' : t.is_winner ? 'Winner!' : 'No luck'}
                     </p>
-                    <p className="text-[10px] text-gray-500">{new Date(t.created_at).toLocaleDateString()}</p>
+                    <p className="text-[10px] text-ink-muted">{new Date(t.created_at).toLocaleDateString()}</p>
                   </div>
                 </div>
                 {t.round_status === 'completed' && t.is_winner && (
                   <div className="text-right">
-                    <p className="text-sm font-bold text-green-400">+{parseFloat(t.payout).toLocaleString()} ETB</p>
+                    <p className="text-sm font-bold text-brand-600">+{parseFloat(t.payout).toLocaleString()} ETB</p>
                   </div>
                 )}
               </div>

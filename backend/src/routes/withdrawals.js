@@ -66,9 +66,13 @@ router.get('/settings', async (req, res) => {
 
 router.post('/', protect, async (req, res) => {
   try {
-    // Check allowed days (dynamic from settings)
+    // Fetch all settings at once
+    const rows = await db.prepare('SELECT * FROM settings').all();
+    const s = rows.reduce((acc, row) => ({ ...acc, [row.key]: row.value }), {});
+
+    // Check allowed days
     const today = new Date().getDay();
-    const allowedDaysStr = await db.prepare("SELECT value FROM settings WHERE key = 'withdrawal_allowed_days'").get()?.value || '1,2,3,4,5,6';
+    const allowedDaysStr = s['withdrawal_allowed_days'] || '1,2,3,4,5,6';
     const allowedDays = allowedDaysStr.split(',').map(Number).filter(n => !isNaN(n));
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     if (!allowedDays.includes(today)) {
@@ -86,24 +90,18 @@ router.post('/', protect, async (req, res) => {
     const currentMin = eatTime.getUTCMinutes();
     const currentFormatted = `${currentHour.toString().padStart(2, '0')}:${currentMin.toString().padStart(2, '0')}`;
 
-    const startStr = await db.prepare("SELECT value FROM settings WHERE key = 'withdrawal_start_time'").get()?.value || '02:00';
-    const endStr = await db.prepare("SELECT value FROM settings WHERE key = 'withdrawal_end_time'").get()?.value || '12:00';
+    const startStr = s['withdrawal_start_time'] || '02:00';
+    const endStr = s['withdrawal_end_time'] || '12:00';
 
     if (currentFormatted < startStr || currentFormatted > endStr) {
       return res.status(400).json({ message: `Withdrawals are only allowed between ${startStr} and ${endStr} (Ethiopian Time).` });
     }
 
     const { amount } = req.body;
-    const minWithdrawalStr = await db.prepare("SELECT value FROM settings WHERE key = 'min_withdrawal'").get()?.value || '200';
+    const minWithdrawalStr = s['min_withdrawal'] || '200';
     const minWithdrawal = parseInt(minWithdrawalStr);
     
     if (!amount || amount < minWithdrawal) return res.status(400).json({ message: `Minimum withdrawal is ${minWithdrawal} ETB` });
-
-    const quickAmountsStr = await db.prepare("SELECT value FROM settings WHERE key = 'withdrawal_quick_amounts'").get()?.value || '500,1500,6000,15000,45000,100000';
-    const quickAmounts = quickAmountsStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0);
-    if (quickAmounts.length > 0 && !quickAmounts.includes(amount)) {
-      return res.status(400).json({ message: 'Amount must be exactly one of the quick select options' });
-    }
 
     const user = await db.prepare('SELECT balance, bank_type, account_number, account_name FROM users WHERE id = ?').get(req.user.id);
     if (!user.bank_type) return res.status(400).json({ message: 'Bank account not configured' });
@@ -113,7 +111,7 @@ router.post('/', protect, async (req, res) => {
     const last = await db.prepare('SELECT created_at FROM withdrawals WHERE user_id = ? ORDER BY created_at DESC LIMIT 1').get(req.user.id);
     if (last) {
       const hours = (Date.now() - new Date(last.created_at).getTime()) / (1000 * 60 * 60);
-      const cooldownStr = await db.prepare("SELECT value FROM settings WHERE key = 'withdrawal_cooldown_hours'").get()?.value || '24';
+      const cooldownStr = s['withdrawal_cooldown_hours'] || '24';
       const cooldown = parseInt(cooldownStr);
       if (hours < cooldown) return res.status(400).json({ message: `You can only withdraw once every ${cooldown} hours` });
     }

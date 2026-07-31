@@ -28,8 +28,10 @@ router.post('/', protect, async (req, res) => {
     if (!product) return res.status(404).json({ message: 'Product not found or inactive' });
 
     const user = await db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id);
-    console.log(`[Purchase] User ${req.user.id} (${req.user.phone}) balance: ${user.balance}, product price: ${product.price}`);
-    if (user.balance < product.price) return res.status(400).json({ message: `Insufficient balance. You have ${user.balance} ETB but need ${product.price} ETB.` });
+    const userBalance = Number(user.balance);
+    const productPrice = Number(product.price);
+    console.log(`[Purchase] User ${req.user.id} (${req.user.phone}) balance: ${userBalance}, product price: ${productPrice}`);
+    if (userBalance < productPrice) return res.status(400).json({ message: `Insufficient balance. You have ${userBalance} ETB but need ${productPrice} ETB.` });
 
     const id = await db.transaction(async (txDb) => {
       await txDb.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(product.price, req.user.id);
@@ -38,14 +40,18 @@ router.post('/', protect, async (req, res) => {
 
       // Handle Invitation Reward based on the purchased VIP Level
       const buyer = await txDb.prepare("SELECT referred_by_id FROM users WHERE id = ?").get(req.user.id);
+      console.log(`[InviteReward] buyer.referred_by_id=${buyer?.referred_by_id}`);
       if (buyer && buyer.referred_by_id) {
-        const inviteEnabled = await txDb.prepare("SELECT value FROM settings WHERE key = 'invitation_reward_enabled'").get()?.value;
+        const inviteEnabledRow = await txDb.prepare("SELECT value FROM settings WHERE key = 'invitation_reward_enabled'").get();
+        const inviteEnabled = inviteEnabledRow?.value;
+        console.log(`[InviteReward] invitation_reward_enabled=${inviteEnabled}`);
         if (inviteEnabled === 'true') {
-          // Get the reward amount for this specific VIP level
-          const rewardAmountStr = await txDb.prepare("SELECT value FROM settings WHERE key = ?").get(`invite_reward_vip_${product.level}`)?.value || '0';
-          const rewardAmount = parseFloat(rewardAmountStr);
+          const rewardRow = await txDb.prepare("SELECT value FROM settings WHERE key = ?").get(`invite_reward_vip_${product.level}`);
+          const rewardAmount = Number(rewardRow?.value || '0');
+          console.log(`[InviteReward] VIP level=${product.level}, rewardAmount=${rewardAmount}, referrerId=${buyer.referred_by_id}`);
           if (rewardAmount > 0) {
             await txDb.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").run(rewardAmount, buyer.referred_by_id);
+            console.log(`[InviteReward] ✅ Added ${rewardAmount} ETB to referrer ${buyer.referred_by_id}`);
           }
         }
       }

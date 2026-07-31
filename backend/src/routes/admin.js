@@ -133,9 +133,12 @@ router.post('/deposits/:id/approve', async (req, res) => {
       let amountToAdd = Number(dep.amount);
 
       const approvedCountResult = await txDb.prepare("SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND status = 'approved'").get(dep.user_id);
-      if (approvedCountResult.count === 1) {
+      const approvedCount = Number(approvedCountResult.count);
+      console.log(`[NewMemberBonus] user=${dep.user_id}, approved deposits so far=${approvedCount}`);
+      if (approvedCount === 1) {
         const settings = await txDb.prepare("SELECT key, value FROM settings WHERE key LIKE 'new_member_bonus_%'").all();
         const sMap = settings.reduce((acc, row) => ({ ...acc, [row.key]: row.value }), {});
+        console.log(`[NewMemberBonus] enabled=${sMap['new_member_bonus_enabled']}, min=${sMap['new_member_bonus_min_percent']}, max=${sMap['new_member_bonus_max_percent']}`);
         
         if (sMap['new_member_bonus_enabled'] === 'true') {
           const minP = Number(sMap['new_member_bonus_min_percent']) || 3;
@@ -146,9 +149,11 @@ router.post('/deposits/:id/approve', async (req, res) => {
           const bonusId = uuidv4();
           await txDb.prepare(`INSERT INTO new_member_bonuses (id, user_id, bonus_percent, bonus_amount) VALUES (?, ?, ?, ?)`).run(bonusId, dep.user_id, pct.toFixed(2), bonusAmount);
           amountToAdd += bonusAmount;
+          console.log(`[NewMemberBonus] ✅ Applied bonus: ${bonusAmount.toFixed(2)} ETB (${pct.toFixed(2)}%). Total to add: ${amountToAdd.toFixed(2)} ETB`);
         }
       }
 
+      console.log(`[DepositApprove] Crediting user ${dep.user_id} with ${amountToAdd} ETB`);
       await txDb.prepare("UPDATE users SET balance = balance + ? WHERE id = ?").run(amountToAdd, dep.user_id);
     });
     res.json({ message: 'Approved' });

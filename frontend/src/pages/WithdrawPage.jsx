@@ -54,6 +54,8 @@ export default function WithdrawPage() {
   }).superRefine((val, ctx) => {
     if (val.amount < minWithdrawal) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Minimum withdrawal is ${minWithdrawal} ETB`, path: ['amount'] });
+    } else if (quickAmounts.length > 0 && !quickAmounts.includes(val.amount)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Amount must be exactly one of the quick select options`, path: ['amount'] });
     }
   });
 

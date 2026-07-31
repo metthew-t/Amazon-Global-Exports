@@ -81,14 +81,18 @@ router.post('/:id/claimReward', protect, async (req, res) => {
       if (hours < 24) return res.status(400).json({ message: 'Reward already claimed for today. Try again later.' });
     }
 
-    const expectedTotal = purchase.daily_return * purchase.duration_days;
-    let newTotalEarned = purchase.total_earned + purchase.daily_return;
+    const dailyReturn = parseFloat(purchase.daily_return);
+    const durationDays = parseInt(purchase.duration_days);
+    const totalEarned = parseFloat(purchase.total_earned);
+
+    const expectedTotal = dailyReturn * durationDays;
+    let newTotalEarned = totalEarned + dailyReturn;
     let status = 'active';
-    let rewardAmount = purchase.daily_return;
+    let rewardAmount = dailyReturn;
 
     if (newTotalEarned >= expectedTotal) {
       status = 'matured';
-      rewardAmount = expectedTotal - purchase.total_earned;
+      rewardAmount = expectedTotal - totalEarned;
       newTotalEarned = expectedTotal;
     }
 

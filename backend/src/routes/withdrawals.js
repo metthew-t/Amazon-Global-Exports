@@ -103,6 +103,12 @@ router.post('/', protect, async (req, res) => {
     
     if (!amount || amount < minWithdrawal) return res.status(400).json({ message: `Minimum withdrawal is ${minWithdrawal} ETB` });
 
+    const quickAmountsStr = s['withdrawal_quick_amounts'] || '500,1500,6000,15000,45000,100000';
+    const quickAmounts = quickAmountsStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n > 0);
+    if (quickAmounts.length > 0 && !quickAmounts.includes(amount)) {
+      return res.status(400).json({ message: 'Amount must be exactly one of the quick select options' });
+    }
+
     const user = await db.prepare('SELECT balance, bank_type, account_number, account_name FROM users WHERE id = ?').get(req.user.id);
     if (!user.bank_type) return res.status(400).json({ message: 'Bank account not configured' });
     if (user.balance < amount) return res.status(400).json({ message: 'Insufficient balance' });

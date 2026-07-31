@@ -60,6 +60,8 @@ export default function AdminSettingsPage() {
       queryClient.invalidateQueries(['withdrawalSettings']);
       queryClient.invalidateQueries(['luckyWheelCurrent']);
       queryClient.invalidateQueries(['dashboardSummary']);
+      queryClient.invalidateQueries(['teamLevels']);
+      queryClient.invalidateQueries(['upgradeLevels']);
       toast({ title: 'Settings saved', type: 'success' });
     }
   });

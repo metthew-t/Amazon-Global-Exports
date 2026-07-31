@@ -218,7 +218,9 @@ router.get('/settings', async (req, res) => {
 router.put('/settings', async (req, res) => {
   await db.transaction(async (txDb) => {
     for (const [key, value] of Object.entries(req.body)) {
-      await txDb.prepare('UPDATE settings SET value = ? WHERE key = ?').run(String(value), key);
+      if (value !== undefined) {
+        await txDb.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = EXCLUDED.value').run(key, String(value));
+      }
     }
   });
   res.json({ message: 'Updated' });

@@ -72,7 +72,7 @@ export async function runMigrateAndSeed() {
     CREATE TABLE IF NOT EXISTS deposits (
       id TEXT PRIMARY KEY,
       user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-      bank_type TEXT NOT NULL CHECK (bank_type IN ('CBE','BOA','AWASH')),
+      bank_type TEXT NOT NULL CHECK (bank_type IN ('CBE','AWASH')),
       transaction_id TEXT NOT NULL,
       amount NUMERIC(15,2) NOT NULL CHECK (amount > 0),
       status TEXT DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
@@ -86,7 +86,7 @@ export async function runMigrateAndSeed() {
     CREATE TABLE IF NOT EXISTS withdrawals (
       id TEXT PRIMARY KEY,
       user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-      bank_type TEXT NOT NULL CHECK (bank_type IN ('CBE','BOA','AWASH')),
+      bank_type TEXT NOT NULL CHECK (bank_type IN ('CBE','AWASH')),
       account_number TEXT NOT NULL,
       account_name TEXT NOT NULL,
       amount NUMERIC(15,2) NOT NULL,
@@ -196,8 +196,6 @@ export async function runMigrateAndSeed() {
     ['lucky_wheel_round_duration_seconds', '86400', 'Round duration in seconds'],
     ['bank_cbe_account', '1000540699236', 'CBE bank deposit account number'],
     ['bank_cbe_name', 'Commercial Bank of Ethiopia (CBE)', 'CBE bank full name'],
-    ['bank_boa_account', '189018436', 'BOA bank deposit account number'],
-    ['bank_boa_name', 'Bank of Abyssinia (BOA)', 'BOA bank full name'],
     ['bank_awash_account', '013351516497900', 'Awash bank deposit account number'],
     ['bank_awash_name', 'Awash Bank', 'Awash bank full name'],
     ['min_withdrawal', '200', 'Minimum withdrawal amount in ETB'],

@@ -46,7 +46,6 @@ router.get('/deposit-banks', protect, async (req, res) => {
     res.json({
       CBE: { name: s['bank_cbe_name'] || 'Commercial Bank of Ethiopia (CBE)', account: s['bank_cbe_account'] || '1000540699236' },
       AWASH: { name: s['bank_awash_name'] || 'Awash Bank', account: s['bank_awash_account'] || '013351516497900' },
-      BOA: { name: s['bank_boa_name'] || 'Bank of Abyssinia (BOA)', account: s['bank_boa_account'] || '189018436' },
     });
   } catch (err) {
     console.error(err);

@@ -96,7 +96,7 @@ export default function AdminSettingsPage() {
         <div className="card">
           <h2 className="text-lg font-semibold text-white mb-4 border-b border-gray-800 pb-2">Deposit Bank Accounts</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {['bank_cbe_account', 'bank_cbe_name', 'bank_boa_account', 'bank_boa_name', 'bank_awash_account', 'bank_awash_name'].map(key => (
+            {['bank_cbe_account', 'bank_cbe_name', 'bank_awash_account', 'bank_awash_name'].map(key => (
               <div key={key}>
                 <label className="label">{settings?.[key]?.description || key}</label>
                 <input type="text" {...register(key)} className="input font-mono" />

@@ -26,7 +26,7 @@ const statusBadgeClass = {
 };
 
 const schema = z.object({
-  bankType: z.enum(['CBE', 'AWASH', 'BOA'], { required_error: 'Please select a bank' }),
+  bankType: z.enum(['CBE', 'AWASH'], { required_error: 'Please select a bank' }),
   amount: z.number({ invalid_type_error: 'Amount must be a number' }).min(100, 'Minimum deposit is 100 ETB'),
   transactionId: z.string()
     .min(5, 'Transaction ID must be at least 5 characters')
@@ -46,7 +46,6 @@ const schema = z.object({
 const FALLBACK_BANKS = {
   CBE: { name: 'Commercial Bank of Ethiopia (CBE)', account: '1000540699236' },
   AWASH: { name: 'Awash Bank', account: '013351516497900' },
-  BOA: { name: 'Bank of Abyssinia (BOA)', account: '189018436' },
 };
 
 export default function DepositPage() {
